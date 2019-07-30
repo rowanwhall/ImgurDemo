@@ -23,15 +23,11 @@ abstract class ImgurDatabase : RoomDatabase() {
         @Volatile
         private var instance: ImgurDatabase? = null
 
-        fun getInstance(context: Context): ImgurDatabase {
-            return instance ?: synchronized(this) {
-                instance
-                    ?: Room.databaseBuilder(context, ImgurDatabase::class.java,
-                        DATABASE_NAME
-                    )
+        fun getInstance(context: Context) =
+            instance ?: synchronized(this) {
+                instance ?: Room.databaseBuilder(context, ImgurDatabase::class.java, DATABASE_NAME)
                     .build()
                     .also { instance = it }
             }
-        }
     }
 }

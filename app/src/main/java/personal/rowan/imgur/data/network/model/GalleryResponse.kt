@@ -5,9 +5,9 @@ import com.google.gson.annotations.SerializedName
 /**
  * Created by Rowan Hall
  */
-data class GalleryResponse(val data: List<GalleryDTO>)
+data class GalleryResponse(val data: List<GalleryDto>)
 
-data class GalleryDTO(
+data class GalleryDto(
     val id: String,
     val title: String,
     val description: String,
@@ -36,10 +36,10 @@ data class GalleryDTO(
     @SerializedName("images_count") val imagesCount: Int,
     @SerializedName("in_gallery") val inGallery: Boolean,
     @SerializedName("is_ad") val isAd: Boolean,
-    val images: List<ImageDTO>
+    val images: List<ImageDto>
 )
 
-data class ImageDTO(
+data class ImageDto(
     val id: String,
     val title: String,
     val description: String,

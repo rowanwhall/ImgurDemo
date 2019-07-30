@@ -1,6 +1,9 @@
 package personal.rowan.imgur.utils
 
+import android.content.Context
 import okhttp3.OkHttpClient
+import personal.rowan.imgur.data.GalleryRepository
+import personal.rowan.imgur.data.db.ImgurDatabase
 import personal.rowan.imgur.data.network.ImgurWebService
 import personal.rowan.imgur.data.network.createRetrofitService
 
@@ -23,5 +26,9 @@ object InjectorUtils {
             ImgurWebService.BASE_URL,
             HTTP_CLIENT
         )
+    }
+
+    fun provideGalleryRepository(context: Context): GalleryRepository {
+        return GalleryRepository.getInstance(provideImgurWebService(), ImgurDatabase.getInstance(context).galleryDao())
     }
 }

@@ -1,5 +1,6 @@
 package personal.rowan.imgur.data.network
 
+import io.reactivex.Observable
 import personal.rowan.imgur.BuildConfig
 import personal.rowan.imgur.data.network.model.GalleryResponse
 import retrofit2.http.GET
@@ -16,11 +17,12 @@ interface ImgurWebService {
         val AUTHORIZATION = BuildConfig.IMGUR_AUTHORIZATION
     }
 
-    @GET("gallery/{section}/{sort}/{window}")
+    @GET("gallery/{section}/{sort}/{window}/{page}")
     fun getGallery(@Path("section") section: String,
                    @Path("sort") sort: String,
                    @Path("window") window: String,
+                   @Path("page") page: Int,
                    @Query("showViral") showViral: Boolean,
                    @Query("mature") mature: Boolean,
-                   @Query("albumPreviews") albumPreviews: String): GalleryResponse
+                   @Query("albumPreviews") albumPreviews: Boolean): Observable<GalleryResponse>
 }

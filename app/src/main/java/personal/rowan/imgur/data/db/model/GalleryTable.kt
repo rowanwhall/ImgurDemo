@@ -1,6 +1,8 @@
 package personal.rowan.imgur.data.db.model
 
 import androidx.room.*
+import personal.rowan.imgur.data.network.model.GalleryDto
+import personal.rowan.imgur.data.network.model.ImageDto
 
 /**
  * Created by Rowan Hall
@@ -35,39 +37,43 @@ data class Gallery(
     val imagesCount: Int,
     val inGallery: Boolean,
     val isAd: Boolean
-)
-
-@Entity(
-    tableName = "image",
-    foreignKeys = [ForeignKey(
-        entity = Gallery::class,
-        parentColumns = ["id"],
-        childColumns = ["gallery"]
-    )]
-)
-data class Image(
-    @PrimaryKey val id: String,
-    val title: String,
-    val description: String,
-    val datetime: Long,
-    val type: String,
-    val animated: Boolean,
-    val width: Int,
-    val height: Int,
-    val size: Int,
-    val views: Int,
-    val bandwidth: Long,
-    val favorite: Boolean,
-    val isAd: Boolean,
-    val link: String,
-    val gallery: String
-)
-
-class PopulatedGallery {
-
-    @Embedded
-    var gallery: Gallery? = null
-
-    @Relation(parentColumn = "id", entityColumn = "gallery")
-    var images: List<Image> = ArrayList()
+) {
+    constructor(dto: GalleryDto) :
+            this(
+                dto.id,
+                dto.title,
+                dto.description,
+                dto.datetime,
+                dto.cover,
+                dto.coverWidth,
+                dto.coverHeight,
+                dto.accountUrl,
+                dto.accountId,
+                dto.privacy,
+                dto.layout,
+                dto.views,
+                dto.link,
+                dto.ups,
+                dto.downs,
+                dto.points,
+                dto.score,
+                dto.isAlbum,
+                dto.favorite,
+                dto.nsfw,
+                dto.section,
+                dto.commentCount,
+                dto.favoriteCount,
+                dto.topic,
+                dto.topicId,
+                dto.imagesCount,
+                dto.inGallery,
+                dto.isAd
+            )
 }
+
+class PopulatedGallery(
+    @Embedded
+    var gallery: Gallery? = null,
+    @Relation(parentColumn = "id", entityColumn = "gallery")
+    var images: List<Image> = listOf()
+)
