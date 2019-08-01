@@ -21,6 +21,9 @@ interface GalleryDao {
     @Query("SELECT * FROM gallery ORDER BY datetime")
     fun getGalleriesByDatetime(): Observable<List<PopulatedGallery>>
 
+    @Query("SELECT * FROM image WHERE id = :imageId")
+    fun getImageById(imageId: String): Observable<Image>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAllGalleries(galleries: List<Gallery>)
 

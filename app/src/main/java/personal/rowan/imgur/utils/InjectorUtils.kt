@@ -6,6 +6,7 @@ import personal.rowan.imgur.data.GalleryRepository
 import personal.rowan.imgur.data.db.ImgurDatabase
 import personal.rowan.imgur.data.network.ImgurWebService
 import personal.rowan.imgur.data.network.createRetrofitService
+import personal.rowan.imgur.feed.FeedViewModelFactory
 
 /**
  * Created by Rowan Hall
@@ -20,7 +21,7 @@ object InjectorUtils {
         }
         .build()
 
-    fun provideImgurWebService(): ImgurWebService {
+    private fun provideImgurWebService(): ImgurWebService {
         return createRetrofitService(
             ImgurWebService::class.java,
             ImgurWebService.BASE_URL,
@@ -28,7 +29,11 @@ object InjectorUtils {
         )
     }
 
-    fun provideGalleryRepository(context: Context): GalleryRepository {
+    private fun provideGalleryRepository(context: Context): GalleryRepository {
         return GalleryRepository.getInstance(provideImgurWebService(), ImgurDatabase.getInstance(context).galleryDao())
+    }
+
+    fun provideFeedViewModelFactory(context: Context): FeedViewModelFactory {
+        return FeedViewModelFactory(provideGalleryRepository(context))
     }
 }

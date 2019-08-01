@@ -1,6 +1,9 @@
 package personal.rowan.imgur.data
 
+import io.reactivex.Completable
 import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import personal.rowan.imgur.data.db.GalleryDao
 import personal.rowan.imgur.data.db.model.Gallery
 import personal.rowan.imgur.data.db.model.Image
@@ -28,18 +31,24 @@ class GalleryRepository private constructor(
 
     }
 
-    fun getPopulatedGalleriesFromDb() = galleryDao.getGalleriesByDatetime()
-
-    fun getPopulatedGalleriesFromWeb(): Observable<List<PopulatedGallery>> {
-        return imgurWebService.getGallery(
-            "hot", "time", "day", 0,
-            showViral = true,
-            mature = true,
-            albumPreviews = true
-        ).map { parseAndPersistGalleryResponse(it) }
+    fun getPopulatedGalleries(): Observable<List<PopulatedGallery>> {
+        // Observable.concatArrayEager will combine observables, preserving the order and executing in parallel
+        return Observable.concatArrayEager(
+            galleryDao.getGalleriesByDatetime().subscribeOn(Schedulers.io()),
+            // Observable.defer will not create the Observable until it is subscribed to, and will create a fresh Observable for each observer
+            Observable.defer {
+                imgurWebService.getGallery(
+                    "hot", "time", "day", 0,
+                    showViral = true,
+                    mature = true,
+                    albumPreviews = true
+                ).subscribeOn(Schedulers.io())
+                    .flatMap { parseAndPersistGalleryResponse(it) }
+            }
+        ).observeOn(AndroidSchedulers.mainThread())
     }
 
-    private fun parseAndPersistGalleryResponse(galleryResponse: GalleryResponse): List<PopulatedGallery> {
+    private fun parseAndPersistGalleryResponse(galleryResponse: GalleryResponse): Observable<List<PopulatedGallery>> {
         val persistedGalleries = mutableListOf<Gallery>()
         val persistedImages = mutableListOf<Image>()
         val populatedGalleries = galleryResponse.data.map { galleryDto ->
@@ -49,9 +58,11 @@ class GalleryRepository private constructor(
             persistedImages.addAll(images)
             PopulatedGallery(gallery, images)
         }
-        galleryDao.insertAllGalleries(persistedGalleries)
-        galleryDao.insertAllImages(persistedImages)
-        return populatedGalleries
+
+        return Completable.fromCallable {
+            galleryDao.insertAllGalleries(persistedGalleries)
+            galleryDao.insertAllImages(persistedImages)
+        }.andThen(Observable.just(populatedGalleries))
     }
 
 }
