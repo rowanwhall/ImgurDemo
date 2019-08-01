@@ -71,7 +71,7 @@ data class Gallery(
             )
 }
 
-class PopulatedGallery(
+data class PopulatedGallery(
     @Embedded
     var gallery: Gallery? = null,
     @Relation(parentColumn = "id", entityColumn = "gallery")

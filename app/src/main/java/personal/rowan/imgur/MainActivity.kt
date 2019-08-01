@@ -1,14 +1,15 @@
 package personal.rowan.imgur
 
 import android.os.Bundle
-import com.google.android.material.snackbar.Snackbar
-import androidx.appcompat.app.AppCompatActivity;
-import android.view.Menu
-import android.view.MenuItem
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.viewModels
+import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.Observer
 
-import kotlinx.android.synthetic.main.activity_main.*
+import personal.rowan.imgur.databinding.ActivityMainBinding
+import personal.rowan.imgur.feed.FeedAdapter
 import personal.rowan.imgur.feed.FeedViewModel
+import personal.rowan.imgur.feed.FeedViewState
 import personal.rowan.imgur.utils.InjectorUtils
 
 class MainActivity : AppCompatActivity() {
@@ -17,12 +18,18 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        setSupportActionBar(toolbar)
+        val binding: ActivityMainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
-        fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
-        }
+        val adapter = FeedAdapter()
+        binding.feedRecycler.adapter = adapter
+        viewModel.feed.observe(this, Observer<FeedViewState> {
+            adapter.submitList(it.galleries)
+        })
+        viewModel.loadFeed()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        viewModel.onDestroy()
     }
 }
