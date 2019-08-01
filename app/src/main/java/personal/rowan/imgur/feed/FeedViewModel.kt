@@ -1,7 +1,10 @@
 package personal.rowan.imgur.feed
 
+import android.util.Log
 import androidx.lifecycle.*
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.schedulers.Schedulers
 import personal.rowan.imgur.data.GalleryRepository
 import personal.rowan.imgur.data.db.model.PopulatedGallery
 
@@ -19,8 +22,12 @@ class FeedViewModel internal constructor(private val galleryRepository: GalleryR
 
     fun loadFeed() {
         disposables.add(galleryRepository.getPopulatedGalleries()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
             .map { FeedViewState(it) }
-            .subscribe({ feed.value = it }, { })
+            .subscribe(
+                { feed.value = it },
+                { Log.e("ERROR", it.message) })
         )
     }
 

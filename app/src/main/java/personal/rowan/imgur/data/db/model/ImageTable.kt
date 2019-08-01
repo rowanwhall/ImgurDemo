@@ -18,8 +18,8 @@ import personal.rowan.imgur.data.network.model.ImageDto
 )
 data class Image(
     @PrimaryKey val id: String,
-    val title: String,
-    val description: String,
+    val title: String?,
+    val description: String?,
     val datetime: Long,
     val type: String,
     val animated: Boolean,

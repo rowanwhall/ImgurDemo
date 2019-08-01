@@ -2,8 +2,6 @@ package personal.rowan.imgur.data
 
 import io.reactivex.Completable
 import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import personal.rowan.imgur.data.db.GalleryDao
 import personal.rowan.imgur.data.db.model.Gallery
 import personal.rowan.imgur.data.db.model.Image
@@ -34,7 +32,7 @@ class GalleryRepository private constructor(
     fun getPopulatedGalleries(): Observable<List<PopulatedGallery>> {
         // Observable.concatArrayEager will combine observables, preserving the order and executing in parallel
         return Observable.concatArrayEager(
-            galleryDao.getGalleriesByDatetime().subscribeOn(Schedulers.io()),
+            galleryDao.getGalleriesByDatetime(),
             // Observable.defer will not create the Observable until it is subscribed to, and will create a fresh Observable for each observer
             Observable.defer {
                 imgurWebService.getGallery(
@@ -42,10 +40,9 @@ class GalleryRepository private constructor(
                     showViral = true,
                     mature = true,
                     albumPreviews = true
-                ).subscribeOn(Schedulers.io())
-                    .flatMap { parseAndPersistGalleryResponse(it) }
+                ).flatMap { parseAndPersistGalleryResponse(it) }
             }
-        ).observeOn(AndroidSchedulers.mainThread())
+        )
     }
 
     private fun parseAndPersistGalleryResponse(galleryResponse: GalleryResponse): Observable<List<PopulatedGallery>> {
@@ -53,7 +50,7 @@ class GalleryRepository private constructor(
         val persistedImages = mutableListOf<Image>()
         val populatedGalleries = galleryResponse.data.map { galleryDto ->
             val gallery = Gallery(galleryDto)
-            val images = galleryDto.images.map { imageDto -> Image(imageDto, galleryDto.id) }
+            val images = galleryDto.images?.map { imageDto -> Image(imageDto, galleryDto.id) } ?: ArrayList()
             persistedGalleries.add(gallery)
             persistedImages.addAll(images)
             PopulatedGallery(gallery, images)

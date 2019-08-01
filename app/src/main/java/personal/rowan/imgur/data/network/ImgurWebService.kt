@@ -13,8 +13,8 @@ import retrofit2.http.Query
 interface ImgurWebService {
 
     companion object {
-        val BASE_URL = "https://api.imgur.com/3/"
-        val AUTHORIZATION = BuildConfig.IMGUR_AUTHORIZATION
+        const val BASE_URL = "https://api.imgur.com/3/"
+        const val AUTHORIZATION = BuildConfig.IMGUR_AUTHORIZATION
     }
 
     @GET("gallery/{section}/{sort}/{window}/{page}")

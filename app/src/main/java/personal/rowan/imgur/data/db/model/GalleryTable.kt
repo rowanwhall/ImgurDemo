@@ -2,7 +2,6 @@ package personal.rowan.imgur.data.db.model
 
 import androidx.room.*
 import personal.rowan.imgur.data.network.model.GalleryDto
-import personal.rowan.imgur.data.network.model.ImageDto
 
 /**
  * Created by Rowan Hall
@@ -11,15 +10,15 @@ import personal.rowan.imgur.data.network.model.ImageDto
 data class Gallery(
     @PrimaryKey val id: String,
     val title: String,
-    val description: String,
+    val description: String?,
     val datetime: Long,
-    val cover: String,
+    val cover: String?,
     val coverWidth: Int,
     val coverHeight: Int,
     val accountUrl: String,
     val accountId: String,
-    val privacy: String,
-    val layout: String,
+    val privacy: String?,
+    val layout: String?,
     val views: Int,
     val link: String,
     val ups: Int,
@@ -29,10 +28,10 @@ data class Gallery(
     val isAlbum: Boolean,
     val favorite: Boolean,
     val nsfw: Boolean,
-    val section: String,
+    val section: String?,
     val commentCount: Int,
     val favoriteCount: Int,
-    val topic: String,
+    val topic: String?,
     val topicId: Int,
     val imagesCount: Int,
     val inGallery: Boolean,
