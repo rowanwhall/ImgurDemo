@@ -2,6 +2,7 @@ package personal.rowan.imgur.data.db.model
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import personal.rowan.imgur.data.network.model.ImageDto
 
@@ -14,7 +15,8 @@ import personal.rowan.imgur.data.network.model.ImageDto
         entity = Gallery::class,
         parentColumns = ["id"],
         childColumns = ["gallery"]
-    )]
+    )],
+    indices = [Index("gallery")]
 )
 data class Image(
     @PrimaryKey val id: String,

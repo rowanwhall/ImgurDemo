@@ -11,7 +11,7 @@
             android:clipToPadding="false"
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layoutManager="androidx.recyclerview.widget.StaggeredGridLayoutManager"
             tools:listitem="@layout/list_item_feed"/>
 
 </layout>
