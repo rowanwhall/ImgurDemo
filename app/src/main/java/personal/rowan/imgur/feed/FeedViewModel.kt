@@ -5,7 +5,9 @@ import androidx.lifecycle.*
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
+import personal.rowan.imgur.data.GalleryDataSource
 import personal.rowan.imgur.data.GalleryRepository
+import personal.rowan.imgur.data.db.DataSource
 import personal.rowan.imgur.data.db.model.PopulatedGallery
 
 /**
@@ -17,17 +19,19 @@ class FeedViewModel internal constructor(private val galleryRepository: GalleryR
     private val disposables = CompositeDisposable()
 
     init {
-        feed.value = FeedViewState(arrayListOf())
+        feed.value = FeedViewState.starting()
     }
 
     fun loadFeed() {
+        val viewState = feed.value!!
         disposables.add(galleryRepository.getPopulatedGalleries()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .map { FeedViewState(it) }
+            .map { viewState.onDataSource(it) }
+            .startWith(viewState.onProgress())
             .subscribe(
                 { feed.value = it },
-                { Log.e("ERROR", it.message) })
+                { feed.value = viewState.onError(it) })
         )
     }
 
@@ -36,7 +40,32 @@ class FeedViewModel internal constructor(private val galleryRepository: GalleryR
     }
 }
 
-data class FeedViewState(val galleries: List<PopulatedGallery>)
+class FeedViewState private constructor(var galleries: List<PopulatedGallery>, var showProgress: Boolean, var error: Throwable?) {
+    companion object {
+        fun starting(): FeedViewState {
+            return FeedViewState(arrayListOf(), false, null)
+        }
+    }
+
+    fun onDataSource(dataSource: GalleryDataSource): FeedViewState {
+        galleries = dataSource.galleries
+        if (dataSource.dataSource == DataSource.NETWORK) {
+            showProgress = false
+            error = null
+        }
+        return this
+    }
+
+    fun onProgress(): FeedViewState {
+        showProgress = true
+        return this
+    }
+
+    fun onError(error: Throwable): FeedViewState {
+        this.error = error
+        return this
+    }
+}
 
 class FeedViewModelFactory(private val galleryRepository: GalleryRepository) : ViewModelProvider.NewInstanceFactory() {
 
