@@ -31,21 +31,17 @@ class GalleryRepository private constructor(
     }
 
     fun getPopulatedGalleries(sort: GallerySort): Observable<GalleryDataSource> {
-        // Observable.concatArrayEager will combine observables, preserving the order and executing in parallel
-        return Observable.concatArrayEager(
+        return Observable.mergeDelayError(
             getPopulatedGalleriesFromDb(sort),
-            // Observable.defer will not create the Observable until it is subscribed to, and will create a fresh Observable for each observer
-            Observable.defer {
-                getPopulatedGalleriesFromWeb(sort)
-            }
+            getPopulatedGalleriesFromWeb(sort)
         )
     }
 
-    private fun getPopulatedGalleriesFromDb(sort: GallerySort): Observable<GalleryDataSource> {
+    private fun getPopulatedGalleriesFromDb(sort: GallerySort, dataSource: DataSource = DataSource.DEVICE): Observable<GalleryDataSource> {
         return when(sort) {
             GallerySort.TOP -> galleryDao.getGalleriesByPoints()
             GallerySort.TIME -> galleryDao.getGalleriesByDatetime()
-        }.map { GalleryDataSource(it, DataSource.DEVICE) }
+        }.map { GalleryDataSource(it, dataSource) }
     }
 
     private fun getPopulatedGalleriesFromWeb(sort: GallerySort): Observable<GalleryDataSource> {
@@ -54,24 +50,23 @@ class GalleryRepository private constructor(
             showViral = true,
             mature = true,
             albumPreviews = true
-        ).flatMap { parseAndPersistGalleryResponse(it) }
+        ).flatMap { parseAndPersistGalleryResponse(it, sort) }
     }
 
-    private fun parseAndPersistGalleryResponse(galleryResponse: GalleryResponse): Observable<GalleryDataSource> {
+    private fun parseAndPersistGalleryResponse(galleryResponse: GalleryResponse, sort: GallerySort): Observable<GalleryDataSource> {
         val persistedGalleries = mutableListOf<Gallery>()
         val persistedImages = mutableListOf<Image>()
-        val populatedGalleries = galleryResponse.data.map { galleryDto ->
+        galleryResponse.data.map { galleryDto ->
             val gallery = Gallery(galleryDto)
             val images = galleryDto.images?.map { imageDto -> Image(imageDto, galleryDto.id) } ?: ArrayList()
             persistedGalleries.add(gallery)
             persistedImages.addAll(images)
-            PopulatedGallery(gallery, images)
         }
 
-        return Completable.fromCallable {
+        return Observable.fromCallable {
             galleryDao.insertAllGalleries(persistedGalleries)
             galleryDao.insertAllImages(persistedImages)
-        }.andThen(Observable.just(GalleryDataSource(populatedGalleries, DataSource.NETWORK)))
+        }.flatMap { getPopulatedGalleriesFromDb(sort, DataSource.NETWORK) }
     }
 }
 
