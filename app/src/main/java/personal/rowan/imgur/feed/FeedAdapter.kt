@@ -25,7 +25,10 @@ class FeedAdapter : ListAdapter<PopulatedGallery, FeedViewHolder>(FeedDiffCallba
 class FeedViewHolder(private val binding: ListItemFeedBinding) : RecyclerView.ViewHolder(binding.root) {
 
     fun bind(gallery: PopulatedGallery) {
-        binding.apply { setGallery(gallery) }
+        binding.apply {
+            setGallery(gallery)
+            executePendingBindings()
+        }
     }
 }
 

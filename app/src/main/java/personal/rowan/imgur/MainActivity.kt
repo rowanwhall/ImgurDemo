@@ -1,6 +1,7 @@
 package personal.rowan.imgur
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.viewModels
 import androidx.databinding.DataBindingUtil
@@ -22,8 +23,13 @@ class MainActivity : AppCompatActivity() {
 
         val adapter = FeedAdapter()
         binding.feedRecycler.adapter = adapter
+        binding.feedRefresh.setOnRefreshListener { viewModel.loadFeed() }
         viewModel.feed.observe(this, Observer<FeedViewState> {
+            binding.feedRefresh.isRefreshing = it.showProgress
             adapter.submitList(it.galleries)
+            it.error?.let { error ->
+                Toast.makeText(this, error.localizedMessage, Toast.LENGTH_SHORT).show()
+            }
         })
         viewModel.loadFeed()
     }

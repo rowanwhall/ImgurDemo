@@ -35,7 +35,9 @@ class GalleryRepository private constructor(
         return Observable.concatArrayEager(
             getPopulatedGalleriesFromDb(),
             // Observable.defer will not create the Observable until it is subscribed to, and will create a fresh Observable for each observer
-            getPopulatedGalleriesFromWeb()
+            Observable.defer {
+                getPopulatedGalleriesFromWeb()
+            }
         )
     }
 

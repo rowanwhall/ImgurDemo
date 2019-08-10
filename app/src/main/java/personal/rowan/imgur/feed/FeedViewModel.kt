@@ -28,6 +28,7 @@ class FeedViewModel internal constructor(private val galleryRepository: GalleryR
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .map { viewState.onDataSource(it) }
+            .onErrorReturn { viewState.onError(it) }
             .startWith(viewState.onProgress())
             .subscribe(
                 { feed.value = it },
@@ -49,10 +50,10 @@ class FeedViewState private constructor(var galleries: List<PopulatedGallery>, v
 
     fun onDataSource(dataSource: GalleryDataSource): FeedViewState {
         galleries = dataSource.galleries
-        if (dataSource.dataSource == DataSource.NETWORK) {
+        //if (dataSource.dataSource == DataSource.NETWORK) {
             showProgress = false
             error = null
-        }
+        //}
         return this
     }
 
@@ -63,6 +64,7 @@ class FeedViewState private constructor(var galleries: List<PopulatedGallery>, v
 
     fun onError(error: Throwable): FeedViewState {
         this.error = error
+        showProgress = false
         return this
     }
 }
