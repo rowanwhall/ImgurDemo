@@ -30,24 +30,27 @@ class GalleryRepository private constructor(
 
     }
 
-    fun getPopulatedGalleries(): Observable<GalleryDataSource> {
+    fun getPopulatedGalleries(sort: GallerySort): Observable<GalleryDataSource> {
         // Observable.concatArrayEager will combine observables, preserving the order and executing in parallel
         return Observable.concatArrayEager(
-            getPopulatedGalleriesFromDb(),
+            getPopulatedGalleriesFromDb(sort),
             // Observable.defer will not create the Observable until it is subscribed to, and will create a fresh Observable for each observer
             Observable.defer {
-                getPopulatedGalleriesFromWeb()
+                getPopulatedGalleriesFromWeb(sort)
             }
         )
     }
 
-    private fun getPopulatedGalleriesFromDb(): Observable<GalleryDataSource> {
-        return galleryDao.getGalleriesByDatetime().map { GalleryDataSource(it, DataSource.DEVICE) }
+    private fun getPopulatedGalleriesFromDb(sort: GallerySort): Observable<GalleryDataSource> {
+        return when(sort) {
+            GallerySort.TOP -> galleryDao.getGalleriesByPoints()
+            GallerySort.TIME -> galleryDao.getGalleriesByDatetime()
+        }.map { GalleryDataSource(it, DataSource.DEVICE) }
     }
 
-    private fun getPopulatedGalleriesFromWeb(): Observable<GalleryDataSource> {
+    private fun getPopulatedGalleriesFromWeb(sort: GallerySort): Observable<GalleryDataSource> {
         return imgurWebService.getGallery(
-            "hot", "time", "day", 0,
+            "hot", sort.requestString, "day", 0,
             showViral = true,
             mature = true,
             albumPreviews = true
@@ -73,3 +76,9 @@ class GalleryRepository private constructor(
 }
 
 data class GalleryDataSource(val galleries: List<PopulatedGallery>, val dataSource: DataSource)
+
+enum class GallerySort(val requestString: String) {
+    TOP("top"),
+    TIME("time"),
+
+}

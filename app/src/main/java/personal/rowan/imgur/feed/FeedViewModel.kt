@@ -7,6 +7,7 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import personal.rowan.imgur.data.GalleryDataSource
 import personal.rowan.imgur.data.GalleryRepository
+import personal.rowan.imgur.data.GallerySort
 import personal.rowan.imgur.data.db.DataSource
 import personal.rowan.imgur.data.db.model.PopulatedGallery
 
@@ -24,7 +25,7 @@ class FeedViewModel internal constructor(private val galleryRepository: GalleryR
 
     fun loadFeed() {
         val viewState = feed.value!!
-        disposables.add(galleryRepository.getPopulatedGalleries()
+        disposables.add(galleryRepository.getPopulatedGalleries(GallerySort.TIME)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .map { viewState.onDataSource(it) }
