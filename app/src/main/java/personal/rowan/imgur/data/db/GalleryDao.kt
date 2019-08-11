@@ -1,5 +1,6 @@
 package personal.rowan.imgur.data.db
 
+import androidx.paging.DataSource
 import androidx.room.*
 import io.reactivex.Observable
 import personal.rowan.imgur.data.db.model.Gallery
@@ -14,12 +15,12 @@ import personal.rowan.imgur.data.db.model.PopulatedGallery
 interface GalleryDao {
 
     @Transaction
-    @Query("SELECT * FROM gallery ORDER BY points")
-    fun getGalleriesByPoints(): Observable<List<PopulatedGallery>>
+    @Query("SELECT * FROM gallery ORDER BY points DESC")
+    fun getGalleriesByPoints(): DataSource.Factory<Int, PopulatedGallery>
 
     @Transaction
-    @Query("SELECT * FROM gallery ORDER BY datetime")
-    fun getGalleriesByDatetime(): Observable<List<PopulatedGallery>>
+    @Query("SELECT * FROM gallery ORDER BY datetime DESC")
+    fun getGalleriesByDatetime(): DataSource.Factory<Int, PopulatedGallery>
 
     @Query("SELECT * FROM image WHERE id = :imageId")
     fun getImageById(imageId: String): Observable<Image>

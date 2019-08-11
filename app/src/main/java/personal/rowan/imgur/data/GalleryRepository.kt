@@ -1,76 +1,85 @@
 package personal.rowan.imgur.data
 
-import io.reactivex.Completable
-import io.reactivex.Observable
-import personal.rowan.imgur.data.db.DataSource
+import androidx.annotation.MainThread
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
+import androidx.paging.toLiveData
 import personal.rowan.imgur.data.db.GalleryDao
-import personal.rowan.imgur.data.db.model.Gallery
-import personal.rowan.imgur.data.db.model.Image
-import personal.rowan.imgur.data.db.model.PopulatedGallery
 import personal.rowan.imgur.data.network.ImgurWebService
+import personal.rowan.imgur.data.network.NetworkState
 import personal.rowan.imgur.data.network.model.GalleryResponse
+import personal.rowan.imgur.feed.Feed
+import personal.rowan.imgur.utils.parseGalleryResponse
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import java.util.concurrent.Executor
 
 /**
  * Created by Rowan Hall
  */
 class GalleryRepository private constructor(
     private val imgurWebService: ImgurWebService,
-    private val galleryDao: GalleryDao
+    private val galleryDao: GalleryDao,
+    private val ioExecutor: Executor
 ) {
 
     companion object {
 
+        private const val PAGE_SIZE = 60
+
         @Volatile
         private var instance: GalleryRepository? = null
 
-        fun getInstance(imgurWebService: ImgurWebService, galleryDao: GalleryDao) =
+        fun getInstance(imgurWebService: ImgurWebService, galleryDao: GalleryDao, ioExecutor: Executor) =
             instance ?: synchronized(this) {
-                instance ?: GalleryRepository(imgurWebService, galleryDao).also { instance = it }
+                instance ?: GalleryRepository(imgurWebService, galleryDao, ioExecutor).also { instance = it }
             }
-
     }
 
-    fun getPopulatedGalleries(sort: GallerySort): Observable<GalleryDataSource> {
-        return Observable.mergeDelayError(
-            getPopulatedGalleriesFromDb(sort),
-            getPopulatedGalleriesFromWeb(sort)
-        )
+    @MainThread
+    fun getGalleries(sort: GallerySort): Feed {
+        val boundaryCallback = GalleryBoundaryCallback(imgurWebService, galleryDao, sort, ioExecutor)
+        val refreshTrigger = MutableLiveData<Unit>()
+        val refreshState = Transformations.switchMap(refreshTrigger) { refresh(sort) }
+        val livePagedList = galleryDao.getGalleriesByDatetime()
+            .toLiveData(pageSize = PAGE_SIZE, boundaryCallback = boundaryCallback)
+        return Feed(livePagedList, boundaryCallback.networkState, { boundaryCallback.helper.retryAllFailed() }, { refreshTrigger.value = null }, refreshState)
     }
 
-    private fun getPopulatedGalleriesFromDb(sort: GallerySort, dataSource: DataSource = DataSource.DEVICE): Observable<GalleryDataSource> {
-        return when(sort) {
-            GallerySort.TOP -> galleryDao.getGalleriesByPoints()
-            GallerySort.TIME -> galleryDao.getGalleriesByDatetime()
-        }.map { GalleryDataSource(it, dataSource) }
-    }
-
-    private fun getPopulatedGalleriesFromWeb(sort: GallerySort): Observable<GalleryDataSource> {
-        return imgurWebService.getGallery(
+    @MainThread
+    private fun refresh(sort: GallerySort): LiveData<NetworkState> {
+        val networkState = MutableLiveData<NetworkState>()
+        networkState.value = NetworkState.LOADING
+        imgurWebService.getGallery(
             "hot", sort.requestString, "day", 0,
             showViral = true,
             mature = true,
             albumPreviews = true
-        ).flatMap { parseAndPersistGalleryResponse(it, sort) }
-    }
+        ).enqueue(
+            object : Callback<GalleryResponse> {
+                override fun onFailure(call: Call<GalleryResponse>, t: Throwable) {
+                    // retrofit calls this on main thread so safe to call set value
+                    networkState.value = NetworkState.error(t.message)
+                }
 
-    private fun parseAndPersistGalleryResponse(galleryResponse: GalleryResponse, sort: GallerySort): Observable<GalleryDataSource> {
-        val persistedGalleries = mutableListOf<Gallery>()
-        val persistedImages = mutableListOf<Image>()
-        galleryResponse.data.map { galleryDto ->
-            val gallery = Gallery(galleryDto)
-            val images = galleryDto.images?.map { imageDto -> Image(imageDto, galleryDto.id) } ?: ArrayList()
-            persistedGalleries.add(gallery)
-            persistedImages.addAll(images)
-        }
-
-        return Observable.fromCallable {
-            galleryDao.insertAllGalleries(persistedGalleries)
-            galleryDao.insertAllImages(persistedImages)
-        }.flatMap { getPopulatedGalleriesFromDb(sort, DataSource.NETWORK) }
+                override fun onResponse(
+                    call: Call<GalleryResponse>,
+                    response: Response<GalleryResponse>
+                ) {
+                    ioExecutor.execute {
+                        ioExecutor.execute {
+                            parseGalleryResponse(response).persist(galleryDao)
+                        }
+                        networkState.postValue(NetworkState.LOADED)
+                    }
+                }
+            }
+        )
+        return networkState
     }
 }
-
-data class GalleryDataSource(val galleries: List<PopulatedGallery>, val dataSource: DataSource)
 
 enum class GallerySort(val requestString: String) {
     TOP("top"),

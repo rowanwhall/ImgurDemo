@@ -3,6 +3,7 @@ package personal.rowan.imgur.data.network
 import io.reactivex.Observable
 import personal.rowan.imgur.BuildConfig
 import personal.rowan.imgur.data.network.model.GalleryResponse
+import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -24,5 +25,5 @@ interface ImgurWebService {
                    @Path("page") page: Int,
                    @Query("showViral") showViral: Boolean,
                    @Query("mature") mature: Boolean,
-                   @Query("albumPreviews") albumPreviews: Boolean): Observable<GalleryResponse>
+                   @Query("albumPreviews") albumPreviews: Boolean): Call<GalleryResponse>
 }

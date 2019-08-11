@@ -25,6 +25,7 @@ buildscript {
         lifecycleVersion = '2.2.0-alpha03'
         materialVersion = '1.0.0'
         navigationVersion = '2.0.0'
+        pagingVersion = '2.1.0'
         recyclerViewVersion = '1.1.0-beta02'
         roomVersion = '2.1.0'
         runnerVersion = '1.0.1'

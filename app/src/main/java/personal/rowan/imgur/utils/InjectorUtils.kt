@@ -7,12 +7,15 @@ import personal.rowan.imgur.data.db.ImgurDatabase
 import personal.rowan.imgur.data.network.ImgurWebService
 import personal.rowan.imgur.data.network.createRetrofitService
 import personal.rowan.imgur.feed.FeedViewModelFactory
+import java.util.concurrent.Executors
 
 /**
  * Created by Rowan Hall
  */
 
 object InjectorUtils {
+
+    private val IO_EXECUTOR = Executors.newFixedThreadPool(5)
 
     private val HTTP_CLIENT = OkHttpClient.Builder()
         .addInterceptor {
@@ -30,7 +33,7 @@ object InjectorUtils {
     }
 
     private fun provideGalleryRepository(context: Context): GalleryRepository {
-        return GalleryRepository.getInstance(provideImgurWebService(), ImgurDatabase.getInstance(context).galleryDao())
+        return GalleryRepository.getInstance(provideImgurWebService(), ImgurDatabase.getInstance(context).galleryDao(), IO_EXECUTOR)
     }
 
     fun provideFeedViewModelFactory(context: Context): FeedViewModelFactory {
