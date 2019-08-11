@@ -4,6 +4,7 @@ import androidx.annotation.MainThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
+import androidx.paging.PagedList
 import androidx.paging.toLiveData
 import personal.rowan.imgur.data.db.GalleryDao
 import personal.rowan.imgur.data.network.ImgurWebService
@@ -44,8 +45,20 @@ class GalleryRepository private constructor(
         val refreshTrigger = MutableLiveData<Unit>()
         val refreshState = Transformations.switchMap(refreshTrigger) { refresh(sort) }
         val livePagedList = galleryDao.getGalleriesByDatetime()
-            .toLiveData(pageSize = PAGE_SIZE, boundaryCallback = boundaryCallback)
-        return Feed(livePagedList, boundaryCallback.networkState, { boundaryCallback.helper.retryAllFailed() }, { refreshTrigger.value = null }, refreshState)
+            .toLiveData(
+                config = PagedList.Config.Builder()
+                    .setEnablePlaceholders(true)
+                    .setPageSize(PAGE_SIZE)
+                    .build(),
+                boundaryCallback = boundaryCallback
+            )
+        return Feed(
+            livePagedList,
+            boundaryCallback.networkState,
+            { boundaryCallback.helper.retryAllFailed() },
+            { refreshTrigger.value = null },
+            refreshState
+        )
     }
 
     @MainThread
@@ -61,7 +74,7 @@ class GalleryRepository private constructor(
             object : Callback<GalleryResponse> {
                 override fun onFailure(call: Call<GalleryResponse>, t: Throwable) {
                     // retrofit calls this on main thread so safe to call set value
-                    networkState.value = NetworkState.error(t.message)
+                    networkState.value = NetworkState.error(t)
                 }
 
                 override fun onResponse(

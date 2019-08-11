@@ -31,6 +31,10 @@ class FeedViewModel internal constructor(private val galleryRepository: GalleryR
     fun refresh() {
         repoResult.value?.refresh?.invoke()
     }
+
+    fun retry() {
+        repoResult.value?.retry?.invoke()
+    }
 }
 
 data class Feed(val pagedList: LiveData<PagedList<PopulatedGallery>>,
