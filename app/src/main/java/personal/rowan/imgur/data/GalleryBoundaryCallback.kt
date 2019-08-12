@@ -6,7 +6,7 @@ import personal.rowan.imgur.data.db.GalleryDao
 import personal.rowan.imgur.data.db.model.PopulatedGallery
 import personal.rowan.imgur.data.network.ImgurWebService
 import personal.rowan.imgur.utils.createStatusLiveData
-import personal.rowan.imgur.utils.createWebserviceCallback
+import personal.rowan.imgur.utils.createGalleryCallback
 import java.util.concurrent.Executor
 
 /**
@@ -15,7 +15,7 @@ import java.util.concurrent.Executor
 class GalleryBoundaryCallback(
     private val imgurWebService: ImgurWebService,
     private val galleryDao: GalleryDao,
-    private val sort: GallerySort,
+    private val arguments: GalleryArguments,
     private val ioExecutor: Executor
 ) : PagedList.BoundaryCallback<PopulatedGallery>() {
 
@@ -27,11 +27,12 @@ class GalleryBoundaryCallback(
     override fun onZeroItemsLoaded() {
         helper.runIfNotRunning(PagingRequestHelper.RequestType.INITIAL) {
             imgurWebService.getGallery(
-                "hot", sort.requestString, "day", 0,
+                arguments.section.requestString, arguments.sort.requestString,
+                page = 0,
                 showViral = true,
                 mature = true,
                 albumPreviews = true
-            ).enqueue(createWebserviceCallback(it, galleryDao, ioExecutor))
+            ).enqueue(createGalleryCallback(it, galleryDao, arguments, ioExecutor))
         }
     }
 
@@ -39,11 +40,12 @@ class GalleryBoundaryCallback(
     override fun onItemAtEndLoaded(itemAtEnd: PopulatedGallery) {
         helper.runIfNotRunning(PagingRequestHelper.RequestType.AFTER) {
             imgurWebService.getGallery(
-                "hot", sort.requestString, "day", ++currentPage,
+                arguments.section.requestString, arguments.sort.requestString,
+                page = ++currentPage,
                 showViral = true,
                 mature = true,
                 albumPreviews = true
-            ).enqueue(createWebserviceCallback(it, galleryDao, ioExecutor))
+            ).enqueue(createGalleryCallback(it, galleryDao, arguments, ioExecutor))
         }
     }
 

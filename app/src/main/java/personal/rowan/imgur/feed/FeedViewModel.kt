@@ -4,7 +4,9 @@ import androidx.lifecycle.*
 import androidx.lifecycle.Transformations.map
 import androidx.lifecycle.Transformations.switchMap
 import androidx.paging.PagedList
+import personal.rowan.imgur.data.GalleryArguments
 import personal.rowan.imgur.data.GalleryRepository
+import personal.rowan.imgur.data.GallerySection
 import personal.rowan.imgur.data.GallerySort
 import personal.rowan.imgur.data.db.model.PopulatedGallery
 import personal.rowan.imgur.data.network.NetworkState
@@ -15,7 +17,7 @@ import personal.rowan.imgur.data.network.NetworkState
 class FeedViewModel internal constructor(private val galleryRepository: GalleryRepository) : ViewModel() {
 
     private val galleryArguments = MutableLiveData<GallerySort>()
-    private val repoResult = map(galleryArguments) { galleryRepository.getGalleries(GallerySort.TIME) }
+    private val repoResult = map(galleryArguments) { galleryRepository.getGalleries(GalleryArguments(GallerySection.HOT, GallerySort.TIME)) }
     val feed = switchMap(repoResult) { it.pagedList }
     val networkState = switchMap(repoResult) { it.networkState }
     val refreshState = switchMap(repoResult) { it.refreshState }

@@ -37,9 +37,10 @@ fun TextView.setTextOrGone(text: String?) {
 fun ImageView.setImageUrl(url: String?) {
     GlideApp.with(context)
         .load(url)
-        .diskCacheStrategy(DiskCacheStrategy.ALL)
+        .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
         .optionalCenterCrop()
-        .error(R.mipmap.ic_launcher) // todo: get real error and placeholder assets
+        .placeholder(android.R.color.darker_gray)
+        .error(android.R.color.holo_red_dark) // todo: get real error and placeholder assets
         .transition(DrawableTransitionOptions.withCrossFade())
         .into(this)
 }

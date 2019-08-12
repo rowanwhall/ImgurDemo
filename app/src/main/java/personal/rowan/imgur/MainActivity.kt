@@ -6,8 +6,6 @@ import androidx.activity.viewModels
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.paging.PagedList
-import androidx.recyclerview.widget.RecyclerView
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.snackbar.Snackbar
 import personal.rowan.imgur.data.GallerySort
 import personal.rowan.imgur.data.db.model.PopulatedGallery
@@ -36,23 +34,26 @@ class MainActivity : AppCompatActivity() {
         binding.feedRecycler.adapter = adapter
         viewModel.feed.observe(this, Observer<PagedList<PopulatedGallery>> { adapter.submitList(it) })
         viewModel.networkState.observe(this, Observer { onNetworkStateChange(it) })
-        viewModel.refreshState.observe(this, Observer { binding.feedRefresh.isRefreshing = it.status == Status.RUNNING })
+        viewModel.refreshState.observe(
+            this,
+            Observer { binding.feedRefresh.isRefreshing = it.status == Status.RUNNING })
         binding.feedRefresh.setOnRefreshListener { viewModel.refresh() }
         viewModel.loadFeed(GallerySort.TIME)
     }
 
     private fun onNetworkStateChange(networkState: NetworkState) {
-        when(networkState.status) {
+        when (networkState.status) {
             Status.RUNNING -> { /* no-op */ }
             Status.SUCCESS -> {
                 retrySnackbar?.dismiss()
                 retrySnackbar = null
             }
             Status.FAILED -> {
-                retrySnackbar = Snackbar.make(binding.root,
+                retrySnackbar = Snackbar.make(
+                    binding.root,
                     "There was an error loading more posts",
-                    Snackbar.LENGTH_INDEFINITE)
-                    .setAction("Retry") { viewModel.retry() }
+                    Snackbar.LENGTH_INDEFINITE
+                ).setAction("Retry") { viewModel.retry() }
                 retrySnackbar?.show()
             }
         }

@@ -40,11 +40,11 @@ class GalleryRepository private constructor(
     }
 
     @MainThread
-    fun getGalleries(sort: GallerySort): Feed {
-        val boundaryCallback = GalleryBoundaryCallback(imgurWebService, galleryDao, sort, ioExecutor)
+    fun getGalleries(arguments: GalleryArguments): Feed {
+        val boundaryCallback = GalleryBoundaryCallback(imgurWebService, galleryDao, arguments, ioExecutor)
         val refreshTrigger = MutableLiveData<Unit>()
-        val refreshState = Transformations.switchMap(refreshTrigger) { refresh(sort) }
-        val livePagedList = galleryDao.getGalleriesByDatetime()
+        val refreshState = Transformations.switchMap(refreshTrigger) { refresh(arguments) }
+        val livePagedList = galleryDao.getGalleries(arguments.section.requestString, arguments.sort.requestString)
             .toLiveData(
                 config = PagedList.Config.Builder()
                     .setEnablePlaceholders(true)
@@ -62,11 +62,12 @@ class GalleryRepository private constructor(
     }
 
     @MainThread
-    private fun refresh(sort: GallerySort): LiveData<NetworkState> {
+    private fun refresh(arguments: GalleryArguments): LiveData<NetworkState> {
         val networkState = MutableLiveData<NetworkState>()
         networkState.value = NetworkState.LOADING
         imgurWebService.getGallery(
-            "hot", sort.requestString, "day", 0,
+            arguments.section.requestString, arguments.sort.requestString,
+            page = 0,
             showViral = true,
             mature = true,
             albumPreviews = true
@@ -82,9 +83,7 @@ class GalleryRepository private constructor(
                     response: Response<GalleryResponse>
                 ) {
                     ioExecutor.execute {
-                        ioExecutor.execute {
-                            parseGalleryResponse(response).persist(galleryDao)
-                        }
+                        parseGalleryResponse(response, arguments).persist(galleryDao)
                         networkState.postValue(NetworkState.LOADED)
                     }
                 }
@@ -94,8 +93,14 @@ class GalleryRepository private constructor(
     }
 }
 
+data class GalleryArguments(val section: GallerySection, val sort: GallerySort)
+
+enum class GallerySection(val requestString: String) {
+    HOT("hot"),
+    TOP("top")
+}
+
 enum class GallerySort(val requestString: String) {
     TOP("top"),
     TIME("time"),
-
 }

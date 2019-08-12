@@ -15,19 +15,15 @@ import personal.rowan.imgur.data.db.model.PopulatedGallery
 interface GalleryDao {
 
     @Transaction
-    @Query("SELECT * FROM gallery ORDER BY points DESC")
-    fun getGalleriesByPoints(): DataSource.Factory<Int, PopulatedGallery>
-
-    @Transaction
-    @Query("SELECT * FROM gallery ORDER BY datetime DESC")
-    fun getGalleriesByDatetime(): DataSource.Factory<Int, PopulatedGallery>
+    @Query("SELECT * FROM gallery WHERE sectionArgument = :section ORDER BY :sort DESC")
+    fun getGalleries(section: String, sort: String): DataSource.Factory<Int, PopulatedGallery>
 
     @Query("SELECT * FROM image WHERE id = :imageId")
     fun getImageById(imageId: String): Observable<Image>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertAllGalleries(galleries: List<Gallery>)
+    fun insertGalleries(galleries: List<Gallery>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertAllImages(images: List<Image>)
+    fun insertImages(images: List<Image>)
 }

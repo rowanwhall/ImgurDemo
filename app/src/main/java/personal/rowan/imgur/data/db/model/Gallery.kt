@@ -1,6 +1,7 @@
 package personal.rowan.imgur.data.db.model
 
 import androidx.room.*
+import personal.rowan.imgur.data.GalleryArguments
 import personal.rowan.imgur.data.network.model.GalleryDto
 
 /**
@@ -35,9 +36,10 @@ data class Gallery(
     val topicId: Int,
     val imagesCount: Int,
     val inGallery: Boolean,
-    val isAd: Boolean
+    val isAd: Boolean,
+    val sectionArgument: String
 ) {
-    constructor(dto: GalleryDto) :
+    constructor(dto: GalleryDto, arguments: GalleryArguments) :
             this(
                 dto.id,
                 dto.title,
@@ -66,7 +68,8 @@ data class Gallery(
                 dto.topicId,
                 dto.imagesCount,
                 dto.inGallery,
-                dto.isAd
+                dto.isAd,
+                arguments.section.requestString
             )
 }
 

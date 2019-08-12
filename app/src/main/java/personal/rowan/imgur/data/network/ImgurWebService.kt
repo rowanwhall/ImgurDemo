@@ -21,7 +21,7 @@ interface ImgurWebService {
     @GET("gallery/{section}/{sort}/{window}/{page}")
     fun getGallery(@Path("section") section: String,
                    @Path("sort") sort: String,
-                   @Path("window") window: String,
+                   @Path("window") window: String = "day",
                    @Path("page") page: Int,
                    @Query("showViral") showViral: Boolean,
                    @Query("mature") mature: Boolean,
