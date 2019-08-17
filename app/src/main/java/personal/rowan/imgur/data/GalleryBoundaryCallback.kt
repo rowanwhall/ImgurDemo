@@ -9,6 +9,7 @@ import personal.rowan.imgur.data.network.ImgurWebService
 import personal.rowan.imgur.utils.createStatusLiveData
 import personal.rowan.imgur.utils.parseAndPersistGalleryResponse
 import java.util.concurrent.Executor
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Created by Rowan Hall
@@ -22,7 +23,7 @@ class GalleryBoundaryCallback(
 
     val helper = PagingRequestHelper(retryExecutor)
     val networkState = helper.createStatusLiveData()
-    private var currentPage = 0
+    private val currentPage = AtomicInteger(0)
 
     @MainThread
     override fun onZeroItemsLoaded() {
@@ -41,7 +42,7 @@ class GalleryBoundaryCallback(
         helper.runIfNotRunning(PagingRequestHelper.RequestType.AFTER) {
             imgurWebService.getGallery(
                 arguments.section.requestString, arguments.sort.requestString,
-                page = ++currentPage
+                page = currentPage.incrementAndGet()
             )
                 .subscribeOn(Schedulers.io())
                 .subscribe { response -> parseAndPersistGalleryResponse(response, arguments, galleryDao) }
