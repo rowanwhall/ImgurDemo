@@ -5,10 +5,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.viewModels
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
-import androidx.paging.PagedList
 import com.google.android.material.snackbar.Snackbar
+import personal.rowan.imgur.data.GalleryArguments
+import personal.rowan.imgur.data.GallerySection
 import personal.rowan.imgur.data.GallerySort
-import personal.rowan.imgur.data.db.model.PopulatedGallery
 import personal.rowan.imgur.data.network.NetworkState
 import personal.rowan.imgur.data.network.Status
 
@@ -32,13 +32,11 @@ class MainActivity : AppCompatActivity() {
     private fun initUi() {
         val adapter = FeedAdapter()
         binding.feedRecycler.adapter = adapter
-        viewModel.feed.observe(this, Observer<PagedList<PopulatedGallery>> { adapter.submitList(it) })
-        viewModel.networkState.observe(this, Observer { onNetworkStateChange(it) })
-        viewModel.refreshState.observe(
-            this,
-            Observer { binding.feedRefresh.isRefreshing = it.status == Status.RUNNING })
-        binding.feedRefresh.setOnRefreshListener { viewModel.refresh() }
-        viewModel.loadFeed(GallerySort.TIME)
+        viewModel.feedData.observePagedList(this, Observer { adapter.submitList(it) })
+        viewModel.feedData.observeNetworkState(this, Observer { onNetworkStateChange(it) })
+        viewModel.feedData.observeRefreshState(this, Observer { binding.feedRefresh.isRefreshing = it.status == Status.RUNNING })
+        binding.feedRefresh.setOnRefreshListener { viewModel.feedData.refresh() }
+        viewModel.feedData.setArguments(GalleryArguments(GallerySection.HOT, GallerySort.TOP))
     }
 
     private fun onNetworkStateChange(networkState: NetworkState) {
@@ -53,7 +51,7 @@ class MainActivity : AppCompatActivity() {
                     binding.root,
                     "There was an error loading more posts",
                     Snackbar.LENGTH_INDEFINITE
-                ).setAction("Retry") { viewModel.retry() }
+                ).setAction("Retry") { viewModel.feedData.retry() }
                 retrySnackbar?.show()
             }
         }

@@ -9,9 +9,9 @@ import androidx.paging.PagedList
 import androidx.paging.toLiveData
 import io.reactivex.schedulers.Schedulers
 import personal.rowan.imgur.data.db.GalleryDao
+import personal.rowan.imgur.data.db.model.PopulatedGallery
 import personal.rowan.imgur.data.network.ImgurWebService
 import personal.rowan.imgur.data.network.NetworkState
-import personal.rowan.imgur.feed.Feed
 import personal.rowan.imgur.utils.parseAndPersistGalleryResponse
 import java.util.concurrent.Executor
 
@@ -38,7 +38,7 @@ class GalleryRepository private constructor(
     }
 
     @MainThread
-    fun getGalleries(arguments: GalleryArguments): Feed {
+    fun getGalleries(arguments: GalleryArguments): PagedListState<PopulatedGallery> {
         val boundaryCallback = GalleryBoundaryCallback(imgurWebService, galleryDao, arguments, retryExecutor)
         val refreshTrigger = MutableLiveData<Unit>()
         val refreshState = Transformations.switchMap(refreshTrigger) { refresh(arguments) }
@@ -50,7 +50,7 @@ class GalleryRepository private constructor(
                     .build(),
                 boundaryCallback = boundaryCallback
             )
-        return Feed(
+        return PagedListState(
             livePagedList,
             boundaryCallback.networkState,
             { boundaryCallback.helper.retryAllFailed() },
