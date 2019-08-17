@@ -1,20 +1,18 @@
 package personal.rowan.imgur.data
 
+import android.annotation.SuppressLint
 import androidx.annotation.MainThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.paging.PagedList
 import androidx.paging.toLiveData
+import io.reactivex.schedulers.Schedulers
 import personal.rowan.imgur.data.db.GalleryDao
 import personal.rowan.imgur.data.network.ImgurWebService
 import personal.rowan.imgur.data.network.NetworkState
-import personal.rowan.imgur.data.network.model.GalleryResponse
 import personal.rowan.imgur.feed.Feed
-import personal.rowan.imgur.utils.parseGalleryResponse
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import personal.rowan.imgur.utils.parseAndPersistGalleryResponse
 import java.util.concurrent.Executor
 
 /**
@@ -23,7 +21,7 @@ import java.util.concurrent.Executor
 class GalleryRepository private constructor(
     private val imgurWebService: ImgurWebService,
     private val galleryDao: GalleryDao,
-    private val ioExecutor: Executor
+    private val retryExecutor: Executor
 ) {
 
     companion object {
@@ -41,7 +39,7 @@ class GalleryRepository private constructor(
 
     @MainThread
     fun getGalleries(arguments: GalleryArguments): Feed {
-        val boundaryCallback = GalleryBoundaryCallback(imgurWebService, galleryDao, arguments, ioExecutor)
+        val boundaryCallback = GalleryBoundaryCallback(imgurWebService, galleryDao, arguments, retryExecutor)
         val refreshTrigger = MutableLiveData<Unit>()
         val refreshState = Transformations.switchMap(refreshTrigger) { refresh(arguments) }
         val livePagedList = galleryDao.getGalleries(arguments.section.requestString, arguments.sort.requestString)
@@ -61,34 +59,27 @@ class GalleryRepository private constructor(
         )
     }
 
+    @SuppressLint("CheckResult")
     @MainThread
     private fun refresh(arguments: GalleryArguments): LiveData<NetworkState> {
         val networkState = MutableLiveData<NetworkState>()
         networkState.value = NetworkState.LOADING
-        imgurWebService.getGallery(
-            arguments.section.requestString, arguments.sort.requestString,
-            page = 0,
-            showViral = true,
-            mature = true,
-            albumPreviews = true
-        ).enqueue(
-            object : Callback<GalleryResponse> {
-                override fun onFailure(call: Call<GalleryResponse>, t: Throwable) {
-                    // retrofit calls this on main thread so safe to call set value
-                    networkState.value = NetworkState.error(t)
-                }
 
-                override fun onResponse(
-                    call: Call<GalleryResponse>,
-                    response: Response<GalleryResponse>
-                ) {
-                    ioExecutor.execute {
-                        parseGalleryResponse(response, arguments).persist(galleryDao)
-                        networkState.postValue(NetworkState.LOADED)
-                    }
-                }
-            }
+        imgurWebService.getGallery(
+            arguments.section.requestString,
+            arguments.sort.requestString,
+            page = 0
         )
+            .subscribeOn(Schedulers.io())
+            .subscribe(
+                {
+                    parseAndPersistGalleryResponse(it, arguments, galleryDao)
+                    networkState.postValue(NetworkState.LOADED)
+                },
+                {
+                    networkState.value = NetworkState.error(it)
+                }
+            )
         return networkState
     }
 }

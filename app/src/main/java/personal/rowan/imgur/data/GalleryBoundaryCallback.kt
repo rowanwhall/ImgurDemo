@@ -2,11 +2,12 @@ package personal.rowan.imgur.data
 
 import androidx.annotation.MainThread
 import androidx.paging.PagedList
+import io.reactivex.schedulers.Schedulers
 import personal.rowan.imgur.data.db.GalleryDao
 import personal.rowan.imgur.data.db.model.PopulatedGallery
 import personal.rowan.imgur.data.network.ImgurWebService
 import personal.rowan.imgur.utils.createStatusLiveData
-import personal.rowan.imgur.utils.createGalleryCallback
+import personal.rowan.imgur.utils.parseAndPersistGalleryResponse
 import java.util.concurrent.Executor
 
 /**
@@ -16,10 +17,10 @@ class GalleryBoundaryCallback(
     private val imgurWebService: ImgurWebService,
     private val galleryDao: GalleryDao,
     private val arguments: GalleryArguments,
-    private val ioExecutor: Executor
+    retryExecutor: Executor
 ) : PagedList.BoundaryCallback<PopulatedGallery>() {
 
-    val helper = PagingRequestHelper(ioExecutor)
+    val helper = PagingRequestHelper(retryExecutor)
     val networkState = helper.createStatusLiveData()
     private var currentPage = 0
 
@@ -28,11 +29,10 @@ class GalleryBoundaryCallback(
         helper.runIfNotRunning(PagingRequestHelper.RequestType.INITIAL) {
             imgurWebService.getGallery(
                 arguments.section.requestString, arguments.sort.requestString,
-                page = 0,
-                showViral = true,
-                mature = true,
-                albumPreviews = true
-            ).enqueue(createGalleryCallback(it, galleryDao, arguments, ioExecutor))
+                page = 0
+            )
+                .subscribeOn(Schedulers.io())
+                .subscribe { response -> parseAndPersistGalleryResponse(response, arguments, galleryDao) }
         }
     }
 
@@ -41,11 +41,10 @@ class GalleryBoundaryCallback(
         helper.runIfNotRunning(PagingRequestHelper.RequestType.AFTER) {
             imgurWebService.getGallery(
                 arguments.section.requestString, arguments.sort.requestString,
-                page = ++currentPage,
-                showViral = true,
-                mature = true,
-                albumPreviews = true
-            ).enqueue(createGalleryCallback(it, galleryDao, arguments, ioExecutor))
+                page = ++currentPage
+            )
+                .subscribeOn(Schedulers.io())
+                .subscribe { response -> parseAndPersistGalleryResponse(response, arguments, galleryDao) }
         }
     }
 
