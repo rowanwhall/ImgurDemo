@@ -6,11 +6,13 @@ import androidx.activity.viewModels
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import com.google.android.material.snackbar.Snackbar
-import personal.rowan.imgur.data.GalleryArguments
-import personal.rowan.imgur.data.GallerySection
-import personal.rowan.imgur.data.GallerySort
+import personal.rowan.imgur.data.db.model.PopulatedGallery
+import personal.rowan.imgur.data.paging.networkanddb.GalleryArguments
+import personal.rowan.imgur.data.paging.networkanddb.GallerySection
+import personal.rowan.imgur.data.paging.networkanddb.GallerySort
 import personal.rowan.imgur.data.network.NetworkState
 import personal.rowan.imgur.data.network.Status
+import personal.rowan.imgur.data.paging.PagedListLiveData
 
 import personal.rowan.imgur.databinding.ActivityMainBinding
 import personal.rowan.imgur.feed.FeedAdapter
@@ -26,17 +28,22 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
-        initUi()
+        subscribeToFeed(viewModel.networkFeed)
     }
 
-    private fun initUi() {
+    private fun subscribeToFeed(feed: PagedListLiveData<GalleryArguments, PopulatedGallery>) {
         val adapter = FeedAdapter()
         binding.feedRecycler.adapter = adapter
-        viewModel.feedData.observePagedList(this, Observer { adapter.submitList(it) })
-        viewModel.feedData.observeNetworkState(this, Observer { onNetworkStateChange(it) })
-        viewModel.feedData.observeRefreshState(this, Observer { binding.feedRefresh.isRefreshing = it.status == Status.RUNNING })
-        binding.feedRefresh.setOnRefreshListener { viewModel.feedData.refresh() }
-        viewModel.feedData.setArguments(GalleryArguments(GallerySection.HOT, GallerySort.TOP))
+        feed.observePagedList(this, Observer { adapter.submitList(it) })
+        feed.observeNetworkState(this, Observer { onNetworkStateChange(it) })
+        feed.observeRefreshState(this, Observer { binding.feedRefresh.isRefreshing = it.status == Status.RUNNING })
+        binding.feedRefresh.setOnRefreshListener { viewModel.networkFeed.refresh() }
+        feed.setArguments(
+            GalleryArguments(
+                GallerySection.HOT,
+                GallerySort.TOP
+            )
+        )
     }
 
     private fun onNetworkStateChange(networkState: NetworkState) {
@@ -51,7 +58,7 @@ class MainActivity : AppCompatActivity() {
                     binding.root,
                     "There was an error loading more posts",
                     Snackbar.LENGTH_INDEFINITE
-                ).setAction("Retry") { viewModel.feedData.retry() }
+                ).setAction("Retry") { viewModel.networkFeed.retry() }
                 retrySnackbar?.show()
             }
         }

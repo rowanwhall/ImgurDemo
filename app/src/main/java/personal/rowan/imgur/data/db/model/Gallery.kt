@@ -1,7 +1,7 @@
 package personal.rowan.imgur.data.db.model
 
 import androidx.room.*
-import personal.rowan.imgur.data.GalleryArguments
+import personal.rowan.imgur.data.paging.networkanddb.GalleryArguments
 import personal.rowan.imgur.data.network.model.GalleryDto
 
 /**

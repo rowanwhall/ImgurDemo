@@ -2,10 +2,11 @@ package personal.rowan.imgur.utils
 
 import android.content.Context
 import okhttp3.OkHttpClient
-import personal.rowan.imgur.data.GalleryRepository
+import personal.rowan.imgur.data.paging.networkanddb.GalleryNetworkAndDbRepository
 import personal.rowan.imgur.data.db.ImgurDatabase
 import personal.rowan.imgur.data.network.ImgurWebService
 import personal.rowan.imgur.data.network.createRetrofitService
+import personal.rowan.imgur.data.paging.networkonly.GalleryNetworkRepository
 import personal.rowan.imgur.feed.FeedViewModelFactory
 import java.util.concurrent.Executors
 
@@ -32,11 +33,19 @@ object InjectorUtils {
         )
     }
 
-    private fun provideGalleryRepository(context: Context): GalleryRepository {
-        return GalleryRepository.getInstance(provideImgurWebService(), ImgurDatabase.getInstance(context).galleryDao(), IO_EXECUTOR)
+    private fun provideGalleryNetworkAndDbRepository(context: Context): GalleryNetworkAndDbRepository {
+        return GalleryNetworkAndDbRepository.getInstance(provideImgurWebService(), ImgurDatabase.getInstance(context).galleryDao(), IO_EXECUTOR)
+    }
+
+    private fun provideGalleryNetworkRepository(context: Context): GalleryNetworkRepository {
+        return GalleryNetworkRepository(
+            provideImgurWebService(),
+            ImgurDatabase.getInstance(context).galleryDao(),
+            IO_EXECUTOR
+        )
     }
 
     fun provideFeedViewModelFactory(context: Context): FeedViewModelFactory {
-        return FeedViewModelFactory(provideGalleryRepository(context))
+        return FeedViewModelFactory(provideGalleryNetworkAndDbRepository(context), provideGalleryNetworkRepository(context))
     }
 }

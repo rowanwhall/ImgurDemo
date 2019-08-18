@@ -1,4 +1,4 @@
-package personal.rowan.imgur.data
+package personal.rowan.imgur.data.paging
 
 import androidx.lifecycle.*
 import androidx.paging.PagedList

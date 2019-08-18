@@ -1,8 +1,9 @@
-package personal.rowan.imgur.data
+package personal.rowan.imgur.data.paging.networkanddb
 
 import androidx.annotation.MainThread
 import androidx.paging.PagedList
 import io.reactivex.schedulers.Schedulers
+import personal.rowan.imgur.data.PagingRequestHelper
 import personal.rowan.imgur.data.db.GalleryDao
 import personal.rowan.imgur.data.db.model.PopulatedGallery
 import personal.rowan.imgur.data.network.ImgurWebService

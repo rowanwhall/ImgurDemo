@@ -1,4 +1,4 @@
-package personal.rowan.imgur.data
+package personal.rowan.imgur.data.paging.networkanddb
 
 import android.annotation.SuppressLint
 import androidx.annotation.MainThread
@@ -8,6 +8,7 @@ import androidx.lifecycle.Transformations
 import androidx.paging.PagedList
 import androidx.paging.toLiveData
 import io.reactivex.schedulers.Schedulers
+import personal.rowan.imgur.data.paging.PagedListState
 import personal.rowan.imgur.data.db.GalleryDao
 import personal.rowan.imgur.data.db.model.PopulatedGallery
 import personal.rowan.imgur.data.network.ImgurWebService
@@ -18,7 +19,7 @@ import java.util.concurrent.Executor
 /**
  * Created by Rowan Hall
  */
-class GalleryRepository private constructor(
+class GalleryNetworkAndDbRepository private constructor(
     private val imgurWebService: ImgurWebService,
     private val galleryDao: GalleryDao,
     private val retryExecutor: Executor
@@ -29,17 +30,27 @@ class GalleryRepository private constructor(
         private const val PAGE_SIZE = 60
 
         @Volatile
-        private var instance: GalleryRepository? = null
+        private var instance: GalleryNetworkAndDbRepository? = null
 
         fun getInstance(imgurWebService: ImgurWebService, galleryDao: GalleryDao, ioExecutor: Executor) =
             instance ?: synchronized(this) {
-                instance ?: GalleryRepository(imgurWebService, galleryDao, ioExecutor).also { instance = it }
+                instance
+                    ?: GalleryNetworkAndDbRepository(
+                        imgurWebService,
+                        galleryDao,
+                        ioExecutor
+                    ).also { instance = it }
             }
     }
 
     @MainThread
     fun getGalleries(arguments: GalleryArguments): PagedListState<PopulatedGallery> {
-        val boundaryCallback = GalleryBoundaryCallback(imgurWebService, galleryDao, arguments, retryExecutor)
+        val boundaryCallback = GalleryBoundaryCallback(
+            imgurWebService,
+            galleryDao,
+            arguments,
+            retryExecutor
+        )
         val refreshTrigger = MutableLiveData<Unit>()
         val refreshState = Transformations.switchMap(refreshTrigger) { refresh(arguments) }
         val livePagedList = galleryDao.getGalleries(arguments.section.requestString, arguments.sort.requestString)

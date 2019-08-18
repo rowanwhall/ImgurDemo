@@ -1,19 +1,30 @@
 package personal.rowan.imgur.feed
 
 import androidx.lifecycle.*
-import personal.rowan.imgur.data.*
 import personal.rowan.imgur.data.db.model.PopulatedGallery
+import personal.rowan.imgur.data.paging.PagedListLiveData
+import personal.rowan.imgur.data.paging.networkanddb.GalleryArguments
+import personal.rowan.imgur.data.paging.networkanddb.GalleryNetworkAndDbRepository
+import personal.rowan.imgur.data.paging.networkonly.GalleryNetworkRepository
 
 /**
  * Created by Rowan Hall
  */
-class FeedViewModel internal constructor(private val galleryRepository: GalleryRepository) : ViewModel() {
+class FeedViewModel internal constructor(private val networkAndDbRepository: GalleryNetworkAndDbRepository,
+                                         private val networkRepository: GalleryNetworkRepository) : ViewModel() {
 
-    val feedData = PagedListLiveData<GalleryArguments, PopulatedGallery> { galleryRepository.getGalleries(it) }
+    val networkFeed = PagedListLiveData<GalleryArguments, PopulatedGallery> {
+        networkRepository.getGalleries(it)
+    }
+
+    val networkAndDbFeed = PagedListLiveData<GalleryArguments, PopulatedGallery> {
+        networkAndDbRepository.getGalleries(it)
+    }
 }
 
-class FeedViewModelFactory(private val galleryRepository: GalleryRepository) : ViewModelProvider.NewInstanceFactory() {
+class FeedViewModelFactory(private val networkAndDbRepository: GalleryNetworkAndDbRepository,
+                           private val networkRepository: GalleryNetworkRepository) : ViewModelProvider.NewInstanceFactory() {
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T : ViewModel> create(modelClass: Class<T>) = FeedViewModel(galleryRepository) as T
+    override fun <T : ViewModel> create(modelClass: Class<T>) = FeedViewModel(networkAndDbRepository, networkRepository) as T
 }
