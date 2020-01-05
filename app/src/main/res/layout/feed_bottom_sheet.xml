@@ -15,52 +15,71 @@
                 android:id="@+id/section_hot"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="18sp"
+                android:layout_marginTop="4dp"
+                android:padding="4dp"
+                android:background="?attr/selectableItemBackground"
+                android:textSize="22sp"
+                android:textStyle="bold"
                 android:text="Hot" />
 
         <TextView
                 android:id="@+id/section_top"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="18sp"
+                android:padding="4dp"
+                android:background="?attr/selectableItemBackground"
+                android:textSize="22sp"
                 android:text="Top" />
 
         <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
+                android:layout_margin="4dp"
                 android:background="@color/colorPrimary" />
 
         <TextView
                 android:id="@+id/sort_top"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="18sp"
+                android:padding="4dp"
+                android:background="?attr/selectableItemBackground"
+                android:textSize="22sp"
+                android:textStyle="bold"
                 android:text="Sort by points" />
 
         <TextView
                 android:id="@+id/sort_time"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="18sp"
+                android:padding="4dp"
+                android:background="?attr/selectableItemBackground"
+                android:textSize="22sp"
                 android:text="Sort by time" />
 
         <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
+                android:layout_margin="4dp"
                 android:background="@color/colorPrimary" />
 
         <TextView
                 android:id="@+id/source_network"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="18sp"
+                android:padding="4dp"
+                android:background="?attr/selectableItemBackground"
+                android:textSize="22sp"
+                android:textStyle="bold"
                 android:text="Only get posts from network" />
 
         <TextView
                 android:id="@+id/source_db"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="18sp"
+                android:layout_marginBottom="4dp"
+                android:padding="4dp"
+                android:background="?attr/selectableItemBackground"
+                android:textSize="22sp"
                 android:text="Save posts locally" />
 
     </LinearLayout>

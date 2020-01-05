@@ -1,5 +1,6 @@
 package personal.rowan.imgur
 
+import android.graphics.Typeface
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -42,27 +43,38 @@ class MainActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         setSupportActionBar(binding.toolbar)
         title = "Imgur"
-        // todo: add options menu to surface bottom sheet dialog that will push new arguments to viewmodel
-        subscribeToFeed(viewModel.feed)
+        subscribeToFeed(viewModel.feed, GalleryArguments(GallerySection.HOT, GallerySort.TOP, GallerySource.NETWORK_ONLY))
         setupBottomSheet()
     }
 
-    private fun subscribeToFeed(feed: PagedListLiveData<GalleryArguments, PopulatedGallery>) {
-        val adapter = FeedAdapter()
-        binding.recycler.adapter = adapter
-        feed.observePagedList(this, Observer { adapter.submitList(it) })
+    private fun subscribeToFeed(feed: PagedListLiveData<GalleryArguments, PopulatedGallery>, initialArguments: GalleryArguments) {
+        binding.recycler.adapter = FeedAdapter()
+        feed.observePagedList(this, Observer { (binding.recycler.adapter as FeedAdapter).submitList(it) })
         feed.observeNetworkState(this, Observer { onNetworkStateChange(it) })
         feed.observeRefreshState(
             this,
             Observer { binding.swipeRefresh.isRefreshing = it.status == Status.RUNNING })
         binding.swipeRefresh.setOnRefreshListener { viewModel.feed.refresh() }
-        feed.setArguments(
-            GalleryArguments(
-                GallerySection.HOT,
-                GallerySort.TOP,
-                GallerySource.NETWORK_ONLY
-            )
-        )
+        feed.setArguments(initialArguments)
+    }
+
+    private fun onNetworkStateChange(networkState: NetworkState) {
+        when (networkState.status) {
+            Status.RUNNING -> { /* no-op */
+            }
+            Status.SUCCESS -> {
+                retrySnackbar?.dismiss()
+                retrySnackbar = null
+            }
+            Status.FAILED -> {
+                retrySnackbar = Snackbar.make(
+                    binding.root,
+                    "There was an error loading more posts",
+                    Snackbar.LENGTH_INDEFINITE
+                ).setAction("Retry") { viewModel.feed.retry() }
+                retrySnackbar?.show()
+            }
+        }
     }
 
     private fun setupBottomSheet() {
@@ -88,36 +100,43 @@ class MainActivity : AppCompatActivity() {
 
         fun setSource(source: GallerySource) {
             viewModel.feed.getArguments()?.let {
+                // adapter must be reset when changing source due to different paged list types
+                binding.recycler.adapter = FeedAdapter()
                 viewModel.feed.setArguments(GalleryArguments(it.section, it.sort, source))
             }
             bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
         }
 
         // click listeners for interaction
-        bottomSheetBinding.sectionHot.setOnClickListener { setSection(GallerySection.HOT) }
-        bottomSheetBinding.sectionTop.setOnClickListener { setSection(GallerySection.TOP) }
-        bottomSheetBinding.sortTime.setOnClickListener { setSort(GallerySort.TIME) }
-        bottomSheetBinding.sortTop.setOnClickListener { setSort(GallerySort.TOP) }
-        bottomSheetBinding.sourceDb.setOnClickListener { setSource(GallerySource.NETWORK_AND_DB) }
-        bottomSheetBinding.sourceNetwork.setOnClickListener { setSource(GallerySource.NETWORK_ONLY) }
-    }
-
-    private fun onNetworkStateChange(networkState: NetworkState) {
-        when (networkState.status) {
-            Status.RUNNING -> { /* no-op */
-            }
-            Status.SUCCESS -> {
-                retrySnackbar?.dismiss()
-                retrySnackbar = null
-            }
-            Status.FAILED -> {
-                retrySnackbar = Snackbar.make(
-                    binding.root,
-                    "There was an error loading more posts",
-                    Snackbar.LENGTH_INDEFINITE
-                ).setAction("Retry") { viewModel.feed.retry() }
-                retrySnackbar?.show()
-            }
+        bottomSheetBinding.sectionHot.setOnClickListener {
+            setSection(GallerySection.HOT)
+            bottomSheetBinding.sectionHot.typeface = Typeface.DEFAULT_BOLD
+            bottomSheetBinding.sectionTop.typeface = Typeface.DEFAULT
+        }
+        bottomSheetBinding.sectionTop.setOnClickListener {
+            setSection(GallerySection.TOP)
+            bottomSheetBinding.sectionTop.typeface = Typeface.DEFAULT_BOLD
+            bottomSheetBinding.sectionHot.typeface = Typeface.DEFAULT
+        }
+        bottomSheetBinding.sortTime.setOnClickListener {
+            setSort(GallerySort.TIME)
+            bottomSheetBinding.sortTime.typeface = Typeface.DEFAULT_BOLD
+            bottomSheetBinding.sortTop.typeface = Typeface.DEFAULT
+        }
+        bottomSheetBinding.sortTop.setOnClickListener {
+            setSort(GallerySort.TOP)
+            bottomSheetBinding.sortTop.typeface = Typeface.DEFAULT_BOLD
+            bottomSheetBinding.sortTime.typeface = Typeface.DEFAULT
+        }
+        bottomSheetBinding.sourceDb.setOnClickListener {
+            setSource(GallerySource.NETWORK_AND_DB)
+            bottomSheetBinding.sourceDb.typeface = Typeface.DEFAULT_BOLD
+            bottomSheetBinding.sourceNetwork.typeface = Typeface.DEFAULT
+        }
+        bottomSheetBinding.sourceNetwork.setOnClickListener {
+            setSource(GallerySource.NETWORK_ONLY)
+            bottomSheetBinding.sourceNetwork.typeface = Typeface.DEFAULT_BOLD
+            bottomSheetBinding.sourceDb.typeface = Typeface.DEFAULT
         }
     }
 
