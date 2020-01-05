@@ -1,5 +1,6 @@
 package personal.rowan.imgur
 
+import android.graphics.Typeface
 import android.view.View
 import android.view.View.*
 import android.widget.ImageView
@@ -25,12 +26,17 @@ fun View.setVisible(show: Boolean) {
 
 @BindingAdapter("textOrGone")
 fun TextView.setTextOrGone(text: String?) {
-    if (text.isNullOrEmpty()) {
-        visibility = GONE
+    visibility = if (text.isNullOrEmpty()) {
+        GONE
     } else {
         setText(text)
-        visibility = VISIBLE
+        VISIBLE
     }
+}
+
+@BindingAdapter("isBold")
+fun TextView.isBold(isBold: Boolean) {
+    typeface = if (isBold) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
 }
 
 @BindingAdapter("imageUrl")

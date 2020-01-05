@@ -2,6 +2,17 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <data>
+        <import type="personal.rowan.imgur.data.GallerySection"/>
+        <import type="personal.rowan.imgur.data.GallerySort"/>
+        <import type="personal.rowan.imgur.data.GallerySource"/>
+        <import type="android.graphics.Typeface"/>
+
+        <variable
+                name="arguments"
+                type="personal.rowan.imgur.data.GalleryArguments"/>
+    </data>
+
     <LinearLayout
             android:id="@+id/bottom_sheet"
             android:layout_width="match_parent"
@@ -19,7 +30,7 @@
                 android:padding="4dp"
                 android:background="?attr/selectableItemBackground"
                 android:textSize="22sp"
-                android:textStyle="bold"
+                app:isBold="@{arguments.section == GallerySection.HOT}"
                 android:text="Hot" />
 
         <TextView
@@ -29,6 +40,7 @@
                 android:padding="4dp"
                 android:background="?attr/selectableItemBackground"
                 android:textSize="22sp"
+                app:isBold="@{arguments.section == GallerySection.TOP}"
                 android:text="Top" />
 
         <View
@@ -44,7 +56,7 @@
                 android:padding="4dp"
                 android:background="?attr/selectableItemBackground"
                 android:textSize="22sp"
-                android:textStyle="bold"
+                app:isBold="@{arguments.sort == GallerySort.TOP}"
                 android:text="Sort by points" />
 
         <TextView
@@ -54,6 +66,7 @@
                 android:padding="4dp"
                 android:background="?attr/selectableItemBackground"
                 android:textSize="22sp"
+                app:isBold="@{arguments.sort == GallerySort.TIME}"
                 android:text="Sort by time" />
 
         <View
@@ -69,7 +82,7 @@
                 android:padding="4dp"
                 android:background="?attr/selectableItemBackground"
                 android:textSize="22sp"
-                android:textStyle="bold"
+                app:isBold="@{arguments.source == GallerySource.NETWORK_ONLY}"
                 android:text="Only get posts from network" />
 
         <TextView
@@ -80,6 +93,7 @@
                 android:padding="4dp"
                 android:background="?attr/selectableItemBackground"
                 android:textSize="22sp"
+                app:isBold="@{arguments.source == GallerySource.NETWORK_AND_DB}"
                 android:text="Save posts locally" />
 
     </LinearLayout>
