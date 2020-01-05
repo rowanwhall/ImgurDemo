@@ -23,6 +23,10 @@ class PagedListLiveData<A, D>(private val mapArgumentsFunction: Function1<A, Pag
         return true
     }
 
+    fun getArguments(): A? {
+        return arguments.value
+    }
+
     fun observePagedList(lifecycleOwner: LifecycleOwner, observer: Observer<PagedList<D>>) {
         pagedListData.observe(lifecycleOwner, observer)
     }

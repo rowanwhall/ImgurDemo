@@ -1,6 +1,6 @@
 package personal.rowan.imgur.utils
 
-import personal.rowan.imgur.data.paging.networkanddb.GalleryArguments
+import personal.rowan.imgur.data.GalleryArguments
 import personal.rowan.imgur.data.db.GalleryDao
 import personal.rowan.imgur.data.db.model.Gallery
 import personal.rowan.imgur.data.db.model.Image

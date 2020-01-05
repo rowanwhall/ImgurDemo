@@ -2,7 +2,7 @@ package personal.rowan.imgur.data.paging.networkonly
 
 import androidx.lifecycle.Transformations
 import androidx.paging.toLiveData
-import personal.rowan.imgur.data.paging.networkanddb.GalleryArguments
+import personal.rowan.imgur.data.GalleryArguments
 import personal.rowan.imgur.data.paging.PagedListState
 import personal.rowan.imgur.data.db.GalleryDao
 import personal.rowan.imgur.data.db.model.PopulatedGallery

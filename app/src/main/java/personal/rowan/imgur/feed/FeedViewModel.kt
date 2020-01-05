@@ -1,9 +1,10 @@
 package personal.rowan.imgur.feed
 
 import androidx.lifecycle.*
+import personal.rowan.imgur.data.GalleryArguments
+import personal.rowan.imgur.data.GallerySource
 import personal.rowan.imgur.data.db.model.PopulatedGallery
 import personal.rowan.imgur.data.paging.PagedListLiveData
-import personal.rowan.imgur.data.paging.networkanddb.GalleryArguments
 import personal.rowan.imgur.data.paging.networkanddb.GalleryNetworkAndDbRepository
 import personal.rowan.imgur.data.paging.networkonly.GalleryNetworkRepository
 
@@ -13,12 +14,11 @@ import personal.rowan.imgur.data.paging.networkonly.GalleryNetworkRepository
 class FeedViewModel internal constructor(private val networkAndDbRepository: GalleryNetworkAndDbRepository,
                                          private val networkRepository: GalleryNetworkRepository) : ViewModel() {
 
-    val networkFeed = PagedListLiveData<GalleryArguments, PopulatedGallery> {
-        networkRepository.getGalleries(it)
-    }
-
-    val networkAndDbFeed = PagedListLiveData<GalleryArguments, PopulatedGallery> {
-        networkAndDbRepository.getGalleries(it)
+    val feed = PagedListLiveData<GalleryArguments, PopulatedGallery> {
+        when(it.source) {
+            GallerySource.NETWORK_ONLY -> networkRepository.getGalleries(it)
+            GallerySource.NETWORK_AND_DB -> networkAndDbRepository.getGalleries(it)
+        }
     }
 }
 

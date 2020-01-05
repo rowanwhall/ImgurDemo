@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.PageKeyedDataSource
 import io.reactivex.schedulers.Schedulers
-import personal.rowan.imgur.data.paging.networkanddb.GalleryArguments
+import personal.rowan.imgur.data.GalleryArguments
 import personal.rowan.imgur.data.db.GalleryDao
 import personal.rowan.imgur.data.db.model.PopulatedGallery
 import personal.rowan.imgur.data.network.ImgurWebService

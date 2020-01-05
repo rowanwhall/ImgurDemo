@@ -8,6 +8,7 @@ import androidx.lifecycle.Transformations
 import androidx.paging.PagedList
 import androidx.paging.toLiveData
 import io.reactivex.schedulers.Schedulers
+import personal.rowan.imgur.data.GalleryArguments
 import personal.rowan.imgur.data.paging.PagedListState
 import personal.rowan.imgur.data.db.GalleryDao
 import personal.rowan.imgur.data.db.model.PopulatedGallery
@@ -93,16 +94,4 @@ class GalleryNetworkAndDbRepository private constructor(
             )
         return networkState
     }
-}
-
-data class GalleryArguments(val section: GallerySection, val sort: GallerySort)
-
-enum class GallerySection(val requestString: String) {
-    HOT("hot"),
-    TOP("top")
-}
-
-enum class GallerySort(val requestString: String) {
-    TOP("top"),
-    TIME("time"),
 }
