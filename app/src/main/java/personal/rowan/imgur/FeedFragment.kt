@@ -2,13 +2,12 @@ package personal.rowan.imgur
 
 import android.os.Bundle
 import android.view.*
-import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
 import personal.rowan.imgur.data.GalleryArguments
 import personal.rowan.imgur.data.GallerySection
@@ -18,6 +17,7 @@ import personal.rowan.imgur.data.db.model.PopulatedGallery
 import personal.rowan.imgur.data.network.NetworkState
 import personal.rowan.imgur.data.network.Status
 import personal.rowan.imgur.data.paging.PagedListLiveData
+import personal.rowan.imgur.databinding.FeedBottomSheetBinding
 import personal.rowan.imgur.databinding.FragmentFeedBinding
 import personal.rowan.imgur.feed.FeedAdapter
 import personal.rowan.imgur.feed.FeedViewModel
@@ -30,7 +30,7 @@ class FeedFragment : Fragment() {
 
     private val viewModel: FeedViewModel by viewModels { InjectorUtils.provideFeedViewModelFactory(activity!!) }
     private lateinit var binding: FragmentFeedBinding
-    private var bottomSheetBehavior: BottomSheetBehavior<LinearLayout>? = null
+    private var bottomSheet: BottomSheetDialog? = null
     private var retrySnackbar: Snackbar? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -83,27 +83,16 @@ class FeedFragment : Fragment() {
 
     private fun setupBottomSheet(initialArguments: GalleryArguments) {
         // set initial state
-        val bottomSheetBinding = binding.bottomSheetInclude
+        val bottomSheetBinding = FeedBottomSheetBinding.inflate(LayoutInflater.from(context!!))
+        bottomSheet = BottomSheetDialog(context!!)
+        bottomSheet?.setContentView(bottomSheetBinding.root)
         bottomSheetBinding.arguments = initialArguments
-        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheetBinding.bottomSheet)
-        binding.scrim.alpha = 0f
-        bottomSheetBehavior?.setBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onSlide(p0: View, p1: Float) { /* no-op */ }
-            override fun onStateChanged(view: View, state: Int) {
-                binding.scrim.animate()
-                    .alpha(if (state == BottomSheetBehavior.STATE_EXPANDED) .5f else 0f)
-                    .setDuration(400)
-                    .setListener(null)
-            }
-
-        })
-        bottomSheetBehavior?.state = BottomSheetBehavior.STATE_HIDDEN
 
         // nested methods for setting arguments
         fun setNewArguments(newArguments: GalleryArguments) {
             viewModel.feed.setArguments(newArguments)
             bottomSheetBinding.arguments = newArguments
-            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_HIDDEN
+            bottomSheet?.hide()
         }
 
         fun setSection(section: GallerySection) {
@@ -142,10 +131,7 @@ class FeedFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_settings -> {
-                when (bottomSheetBehavior?.state) {
-                    BottomSheetBehavior.STATE_EXPANDED -> bottomSheetBehavior?.state = BottomSheetBehavior.STATE_HIDDEN
-                    BottomSheetBehavior.STATE_HIDDEN -> bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
-                }
+                bottomSheet?.show()
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -155,7 +141,7 @@ class FeedFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         retrySnackbar = null
-        bottomSheetBehavior = null
+        bottomSheet = null
     }
 
 }

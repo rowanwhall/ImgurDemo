@@ -36,16 +36,6 @@
 
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-        <View
-                android:id="@+id/scrim"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@android:color/background_dark"/>
-
-        <include
-                layout="@layout/feed_bottom_sheet"
-                android:id="@+id/bottom_sheet_include"/>
-
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 </layout>
