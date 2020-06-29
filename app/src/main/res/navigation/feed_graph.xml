@@ -21,8 +21,8 @@
             android:label="FeedDetailFragment">
 
         <argument
-            android:name="image_url"
-            app:argType="string"/>
+            android:name="populatedGallery"
+            app:argType="personal.rowan.imgur.data.db.model.PopulatedGallery"/>
 
     </fragment>
 

@@ -68,7 +68,7 @@ class FeedFragment : Fragment() {
     }
 
     private fun navigateToDetailFragment(populatedGallery: PopulatedGallery) {
-        findNavController().navigate(FeedFragmentDirections.actionFeedFragmentToFeedDetailFragment(populatedGallery.images[0].link))
+        findNavController().navigate(FeedFragmentDirections.actionFeedFragmentToFeedDetailFragment(populatedGallery))
     }
 
     private fun onNetworkStateChange(networkState: NetworkState) {

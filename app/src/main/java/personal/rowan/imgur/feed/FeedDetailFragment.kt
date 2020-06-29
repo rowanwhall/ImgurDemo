@@ -26,7 +26,7 @@ class FeedDetailFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.imageUrl = args.imageUrl
+        binding.imageUrl = args.populatedGallery.images[0].link
     }
 
 }

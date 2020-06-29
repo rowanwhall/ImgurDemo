@@ -39,8 +39,20 @@ fun TextView.isBold(isBold: Boolean) {
     typeface = if (isBold) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
 }
 
-@BindingAdapter("imageUrl")
-fun ImageView.setImageUrl(url: String?) {
+@BindingAdapter("detailImageUrl")
+fun ImageView.setDetailImage(url: String?) {
+    GlideApp.with(context)
+        .load(url)
+        .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+        .fitCenter()
+        .placeholder(android.R.color.darker_gray)
+        .error(android.R.color.holo_red_dark) // todo: get real error and placeholder assets
+        .transition(DrawableTransitionOptions.withCrossFade())
+        .into(this)
+}
+
+@BindingAdapter("feedImageUrl")
+fun ImageView.setFeedImage(url: String?) {
     GlideApp.with(context)
         .load(url)
         .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
@@ -55,8 +67,8 @@ fun ImageView.setImageUrl(url: String?) {
 fun ImageView.setGalleryImage(gallery: PopulatedGallery) {
     val images = gallery.images
     if (images.isNotEmpty()) {
-        setImageUrl(images[0].link)
+        setFeedImage(images[0].link)
     } else {
-        setImageUrl(gallery.gallery!!.link)
+        setFeedImage(gallery.gallery!!.link)
     }
 }
