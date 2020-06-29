@@ -54,6 +54,8 @@ dependencies {
     implementation "androidx.room:room-rxjava2:$rootProject.roomVersion"
     implementation "androidx.paging:paging-runtime-ktx:$rootProject.pagingVersion"
     implementation "androidx.paging:paging-rxjava2-ktx:$rootProject.pagingVersion"
+    implementation "androidx.viewpager2:viewpager2:$rootProject.viewpager2Version"
+    implementation "androidx.swiperefreshlayout:swiperefreshlayout:$rootProject.swipeRefreshVersion"
 
     implementation "com.github.bumptech.glide:glide:$rootProject.glideVersion"
     implementation "com.github.bumptech.glide:okhttp3-integration:$rootProject.glideVersion"
@@ -65,7 +67,7 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$rootProject.coroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$rootProject.coroutinesVersion"
 
-    implementation 'io.reactivex.rxjava2:rxjava:2.1.14'
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.9'
     implementation 'io.reactivex.rxjava2:rxandroid:2.0.2'
 
     implementation 'com.squareup.retrofit2:retrofit:2.4.0'
