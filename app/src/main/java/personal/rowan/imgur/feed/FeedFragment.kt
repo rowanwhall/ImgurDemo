@@ -1,4 +1,4 @@
-package personal.rowan.imgur
+package personal.rowan.imgur.feed
 
 import android.os.Bundle
 import android.view.*
@@ -7,8 +7,11 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
+import io.reactivex.disposables.Disposable
+import personal.rowan.imgur.R
 import personal.rowan.imgur.data.GalleryArguments
 import personal.rowan.imgur.data.GallerySection
 import personal.rowan.imgur.data.GallerySort
@@ -19,8 +22,6 @@ import personal.rowan.imgur.data.network.Status
 import personal.rowan.imgur.data.paging.PagedListLiveData
 import personal.rowan.imgur.databinding.FeedBottomSheetBinding
 import personal.rowan.imgur.databinding.FragmentFeedBinding
-import personal.rowan.imgur.feed.FeedAdapter
-import personal.rowan.imgur.feed.FeedViewModel
 import personal.rowan.imgur.utils.InjectorUtils
 
 /**
@@ -30,11 +31,13 @@ class FeedFragment : Fragment() {
 
     private val viewModel: FeedViewModel by viewModels { InjectorUtils.provideFeedViewModelFactory(activity!!) }
     private lateinit var binding: FragmentFeedBinding
+    private var itemClickDisposable: Disposable? = null
     private var bottomSheet: BottomSheetDialog? = null
     private var retrySnackbar: Snackbar? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_feed, container, false)
+        binding = DataBindingUtil.inflate(inflater,
+            R.layout.fragment_feed, container, false)
         return binding.root
     }
 
@@ -54,7 +57,9 @@ class FeedFragment : Fragment() {
     }
 
     private fun subscribeToFeed(feed: PagedListLiveData<GalleryArguments, PopulatedGallery>, initialArguments: GalleryArguments) {
-        binding.recycler.adapter = FeedAdapter()
+        val adapter = FeedAdapter()
+        itemClickDisposable = adapter.itemClickObservable().subscribe { navigateToDetailFragment(it) }
+        binding.recycler.adapter = adapter
         feed.observePagedList(this, Observer { (binding.recycler.adapter as FeedAdapter).submitList(it) })
         feed.observeNetworkState(this, Observer { onNetworkStateChange(it) })
         feed.observeRefreshState(this, Observer { binding.swipeRefresh.isRefreshing = it.status == Status.RUNNING })
@@ -62,10 +67,13 @@ class FeedFragment : Fragment() {
         feed.setArguments(initialArguments)
     }
 
+    private fun navigateToDetailFragment(populatedGallery: PopulatedGallery) {
+        findNavController().navigate(FeedFragmentDirections.actionFeedFragmentToFeedDetailFragment(populatedGallery.images[0].link))
+    }
+
     private fun onNetworkStateChange(networkState: NetworkState) {
         when (networkState.status) {
-            Status.RUNNING -> { /* no-op */
-            }
+            Status.RUNNING -> { /* no-op */ }
             Status.SUCCESS -> {
                 retrySnackbar?.dismiss()
                 retrySnackbar = null
@@ -96,15 +104,11 @@ class FeedFragment : Fragment() {
         }
 
         fun setSection(section: GallerySection) {
-            viewModel.feed.getArguments()?.let {
-                setNewArguments(GalleryArguments(section, it.sort, it.source))
-            }
+            viewModel.feed.getArguments()?.let { setNewArguments(GalleryArguments(section, it.sort, it.source)) }
         }
 
         fun setSort(sort: GallerySort) {
-            viewModel.feed.getArguments()?.let {
-                setNewArguments(GalleryArguments(it.section, sort, it.source))
-            }
+            viewModel.feed.getArguments()?.let { setNewArguments(GalleryArguments(it.section, sort, it.source)) }
         }
 
         fun setSource(source: GallerySource) {
@@ -140,6 +144,7 @@ class FeedFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        itemClickDisposable?.dispose()
         retrySnackbar = null
         bottomSheet = null
     }

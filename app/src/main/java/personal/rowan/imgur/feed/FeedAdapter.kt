@@ -6,6 +6,8 @@ import android.view.ViewGroup
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import io.reactivex.Observable
+import io.reactivex.subjects.PublishSubject
 import personal.rowan.imgur.data.db.model.Gallery
 import personal.rowan.imgur.data.db.model.PopulatedGallery
 import personal.rowan.imgur.databinding.ListItemFeedBinding
@@ -15,12 +17,18 @@ import personal.rowan.imgur.databinding.ListItemFeedBinding
  */
 class FeedAdapter : PagedListAdapter<PopulatedGallery, FeedViewHolder>(FeedDiffCallback()) {
 
+    private val itemClickSubject: PublishSubject<PopulatedGallery> = PublishSubject.create()
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FeedViewHolder {
         return GalleryViewHolder(ListItemFeedBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
 
     override fun onBindViewHolder(holder: FeedViewHolder, position: Int) {
-        (holder as GalleryViewHolder).bind(getItem(position))
+        (holder as GalleryViewHolder).bind(getItem(position), itemClickSubject)
+    }
+
+    fun itemClickObservable(): Observable<PopulatedGallery> {
+        return itemClickSubject
     }
 }
 
@@ -63,9 +71,14 @@ class GalleryViewHolder(private val binding: ListItemFeedBinding) : FeedViewHold
         )
     }
 
-    fun bind(gallery: PopulatedGallery?) {
+    fun bind(gallery: PopulatedGallery?, clickSubject: PublishSubject<PopulatedGallery>) {
         binding.apply {
             setGallery(gallery ?: PLACEHOLDER_GALLERY)
+            if (gallery != null) {
+                feedItemImage.setOnClickListener { clickSubject.onNext(gallery) }
+            } else {
+                feedItemImage.setOnClickListener(null)
+            }
             executePendingBindings()
         }
     }
