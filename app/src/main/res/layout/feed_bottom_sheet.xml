@@ -29,7 +29,7 @@
                 android:background="?attr/selectableItemBackground"
                 android:textSize="22sp"
                 app:isBold="@{arguments.section == GallerySection.HOT}"
-                android:text="Hot" />
+                android:text="@string/bottom_sheet_section_hot" />
 
         <TextView
                 android:id="@+id/section_top"
@@ -39,7 +39,7 @@
                 android:background="?attr/selectableItemBackground"
                 android:textSize="22sp"
                 app:isBold="@{arguments.section == GallerySection.TOP}"
-                android:text="Top" />
+                android:text="@string/bottom_sheet_section_top" />
 
         <View
                 android:layout_width="match_parent"
@@ -55,7 +55,7 @@
                 android:background="?attr/selectableItemBackground"
                 android:textSize="22sp"
                 app:isBold="@{arguments.sort == GallerySort.TOP}"
-                android:text="Sort by points" />
+                android:text="@string/bottom_sheet_sort_top" />
 
         <TextView
                 android:id="@+id/sort_time"
@@ -65,7 +65,7 @@
                 android:background="?attr/selectableItemBackground"
                 android:textSize="22sp"
                 app:isBold="@{arguments.sort == GallerySort.TIME}"
-                android:text="Sort by time" />
+                android:text="@string/bottom_sheet_sort_time" />
 
         <View
                 android:layout_width="match_parent"
@@ -81,7 +81,7 @@
                 android:background="?attr/selectableItemBackground"
                 android:textSize="22sp"
                 app:isBold="@{arguments.source == GallerySource.NETWORK_ONLY}"
-                android:text="Only get posts from network" />
+                android:text="@string/bottom_sheet_source_network" />
 
         <TextView
                 android:id="@+id/source_db"
@@ -92,7 +92,7 @@
                 android:background="?attr/selectableItemBackground"
                 android:textSize="22sp"
                 app:isBold="@{arguments.source == GallerySource.NETWORK_AND_DB}"
-                android:text="Save posts locally" />
+                android:text="@string/bottom_sheet_source_db" />
 
     </LinearLayout>
 </layout>

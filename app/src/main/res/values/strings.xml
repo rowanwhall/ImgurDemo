@@ -1,4 +1,15 @@
 <resources>
     <string name="app_name">Imgur</string>
+    <string name="feed_title">Imgur Jetpack Demo</string>
+    <string name="feed_loading_error">There was an error loading more posts</string>
+    <string name="feed_retry_snackbar">Retry</string>
+
+    <string name="bottom_sheet_section_hot">Hot</string>
+    <string name="bottom_sheet_section_top">Top</string>
+    <string name="bottom_sheet_sort_top">Sort by points</string>
+    <string name="bottom_sheet_sort_time">Sort by time</string>
+    <string name="bottom_sheet_source_network">Only get posts from network</string>
+    <string name="bottom_sheet_source_db">Save posts locally</string>
+
     <string name="action_settings">Settings</string>
 </resources>
