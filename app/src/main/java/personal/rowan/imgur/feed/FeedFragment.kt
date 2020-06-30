@@ -52,7 +52,7 @@ class FeedFragment : Fragment() {
     private fun setupToolbar() {
         val activity = activity as AppCompatActivity
         activity.setSupportActionBar(binding.toolbar)
-        activity.title = "Imgur Jetpack Demo"
+        activity.title = getString(R.string.feed_title)
         setHasOptionsMenu(true)
     }
 
@@ -81,9 +81,9 @@ class FeedFragment : Fragment() {
             Status.FAILED -> {
                 retrySnackbar = Snackbar.make(
                     binding.root,
-                    "There was an error loading more posts",
+                    getString(R.string.feed_loading_error),
                     Snackbar.LENGTH_INDEFINITE
-                ).setAction("Retry") { viewModel.feed.retry() }
+                ).setAction(getString(R.string.feed_retry_snackbar)) { viewModel.feed.retry() }
                 retrySnackbar?.show()
             }
         }
